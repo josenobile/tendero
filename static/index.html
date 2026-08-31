@@ -343,9 +343,13 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
   tarifas de transportadora y datos del comercio son ficticios; las reglas tributarias, los
   topes de recaudo, el calendario de festivos y el dígito de verificación del NIT son reales.
   Código abierto bajo licencia MIT.</p>
+  <p>Las seis herramientas se resuelven <strong>dentro de la página</strong>, contra
+  <code>dominio.js</code>: sin backend, sin red y sin build. El servidor FastAPI del
+  repositorio queda como implementación de referencia y como banco de pruebas — sus 363
+  pruebas son las que fijan cada cifra que ves acá.</p>
 </footer>
 
-<script>
+<script type="module">
 "use strict";
 
 /* ===================================================================== *
@@ -360,17 +364,27 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
  *
  *  Toda herramienta pinta su resultado en el DOM. Si un agente llama algo
  *  y la pantalla no cambia, para el humano que mira no pasó nada.
+ *
+ *  SIN BACKEND. Las seis herramientas no llaman a ningún servidor: resuelven
+ *  contra `dominio.js`, que es el port a JavaScript del dominio colombiano
+ *  probado en Python. Eso importa por tres razones:
+ *
+ *   · la vitrina se publica en cualquier hosting estático, sin proceso vivo;
+ *   · durante una evaluación no hay servidor que se pueda caer a mitad;
+ *   · y es lo que la especificación WebMCP propone de verdad — la PÁGINA
+ *     expone sus propias capacidades. Una página que reenvía cada `execute()`
+ *     a un endpoint no está exponiendo nada suyo, está proxyeando.
+ *
+ *  El backend FastAPI del repositorio sigue existiendo como implementación
+ *  de referencia y como suite de pruebas: cada cifra que sale de `dominio.js`
+ *  se verifica byte a byte contra la que produce el Python.
  * ===================================================================== */
 
-const API = {
-  contexto: "/api/contexto",
-  buscar_productos: "/api/buscar_productos",
-  cotizar_envio: "/api/cotizar_envio",
-  validar_documento_dian: "/api/validar_documento_dian",
-  calcular_total_con_iva: "/api/calcular_total_con_iva",
-  consultar_derecho_retracto: "/api/consultar_derecho_retracto",
-  metodos_de_pago: "/api/metodos_de_pago",
-};
+// El dominio, cargado como módulo. Publicada de forma estática la vitrina y el
+// módulo son hermanos, así que basta la ruta relativa; servida por el FastAPI
+// del repositorio la página vive en «/» y el módulo bajo «/static/», de ahí el
+// segundo intento. No hay tercera ruta: si las dos fallan, no hay tienda.
+const D = await import("./dominio.js").catch(() => import("/static/dominio.js"));
 
 const estado = {
   contexto: null,
@@ -384,17 +398,6 @@ const estado = {
 const $ = (id) => document.getElementById(id);
 const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
-async function pedir(ruta, cuerpo) {
-  const r = await fetch(ruta, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(cuerpo ?? {}),
-  });
-  const datos = await r.json().catch(() => ({ error: "respuesta ilegible del servidor" }));
-  if (!r.ok) throw new Error(datos.error || datos.detail || ("HTTP " + r.status));
-  return datos;
-}
 
 const items = () => [...estado.carrito].map(([sku, cantidad]) => ({ sku, cantidad }));
 
@@ -588,7 +591,7 @@ function pintarDocumento(datos, origen) {
 
 const acciones = {
   async buscar_productos(args, origen) {
-    const datos = await pedir(API.buscar_productos, {
+    const datos = D.buscar_productos({
       consulta: args.consulta ?? "",
       categoria: args.categoria ?? null,
       destino: args.destino ?? estado.destino?.codigo_dane ?? null,
@@ -601,7 +604,7 @@ const acciones = {
   async cotizar_envio(args, origen) {
     const destino = args.destino ?? estado.destino?.codigo_dane;
     if (!destino) throw new Error("falta el destino: ningún municipio está seleccionado en la página");
-    const datos = await pedir(API.cotizar_envio, {
+    const datos = D.cotizar_envio({
       destino,
       items: items(),
       contraentrega: args.contraentrega ?? false,
@@ -613,7 +616,7 @@ const acciones = {
   },
 
   async validar_documento_dian(args, origen) {
-    const datos = await pedir(API.validar_documento_dian, { tipo: args.tipo, numero: args.numero });
+    const datos = D.validar_documento_dian({ tipo: args.tipo, numero: args.numero });
     $("tipo-doc").value = datos.tipo;
     $("num-doc").value = args.numero;
     pintarDocumento(datos, origen);
@@ -621,7 +624,7 @@ const acciones = {
   },
 
   async calcular_total_con_iva(args, origen) {
-    const datos = await pedir(API.calcular_total_con_iva, {
+    const datos = D.calcular_total_con_iva({
       items: items(),
       destino: args.destino ?? estado.destino?.codigo_dane ?? null,
       responsable_iva: args.responsable_iva ?? true,
@@ -638,7 +641,7 @@ const acciones = {
       exclusiones: args.exclusiones ?? [],
     };
     if (!cuerpo.fecha_entrega) throw new Error("falta la fecha de entrega en formato AAAA-MM-DD");
-    const datos = await pedir(API.consultar_derecho_retracto, cuerpo);
+    const datos = D.consultar_derecho_retracto(cuerpo);
     $("fecha-entrega").value = datos.fecha_entrega;
     $("modalidad").value = datos.modalidad;
     pintarRetracto(datos, origen);
@@ -648,7 +651,7 @@ const acciones = {
   async metodos_de_pago(args, origen) {
     const destino = args.destino ?? estado.destino?.codigo_dane;
     if (!destino) throw new Error("falta el destino: los rieles de pago dependen del municipio");
-    const datos = await pedir(API.metodos_de_pago, {
+    const datos = D.metodos_de_pago({
       items: items(),
       destino,
       banco_pse: args.banco_pse ?? null,
@@ -1071,8 +1074,8 @@ async function arrancar() {
     $("aviso-sin-webmcp").classList.remove("oculto");
   }
 
-  // 3. maestros
-  const ctx = await (await fetch(API.contexto)).json();
+  // 3. maestros: los mismos que servía GET /api/contexto, ya en memoria
+  const ctx = D.contexto();
   estado.contexto = ctx;
   $("nombre-comercio").textContent = ctx.comercio.nombre;
   $("datos-comercio").textContent = ctx.comercio.documento + " · " + ctx.comercio.direccion +

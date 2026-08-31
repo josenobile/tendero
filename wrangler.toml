@@ -1,0 +1,14 @@
+# Tendero as a static-assets Worker.
+#
+# WHY Workers and not Pages: the WebMCP challenge needs a public HTTPS URL that stays
+# up while judges evaluate, days after submission. Since the domain was ported to
+# dominio.js the page is fully client-side, so there is no server to run — only files
+# to serve. Workers' static assets do exactly that, with no build step and no origin.
+name = "tendero"
+compatibility_date = "2026-08-31"
+
+[assets]
+directory = "./static"
+# The page is a single entry point; anything else is a 404 rather than an SPA rewrite,
+# because a wrong URL silently serving the app would hide a broken tool link.
+not_found_handling = "404-page"

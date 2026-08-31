@@ -58,6 +58,25 @@ integration:
     paths: [coverage-integration.xml]
     expire_in: 1 week
 
+# Paridad JS/Python. La vitrina ya no llama al backend: `static/dominio.js` es un
+# port del dominio a JavaScript, asi que la pagina se puede publicar estatica. Eso
+# solo vale si el JS responde EXACTAMENTE lo mismo que el Python, que es la
+# especificacion. Necesita node, que la imagen base no trae; sin este job la
+# prueba se salta y la paridad deja de estar verificada.
+parity:
+  stage: test
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends nodejs
+    - node --version
+    - pip install --quiet --upgrade pip
+    - pip install --quiet -e ".[dev]"
+  script:
+    - pytest tests/parity -v --junitxml=report-parity.xml
+  artifacts:
+    when: always
+    reports: {junit: report-parity.xml}
+    expire_in: 1 week
+
 # ---------------------------------------------------------------- quality gate
 coverage-gate:
   stage: quality

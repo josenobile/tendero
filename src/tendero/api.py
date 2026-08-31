@@ -18,6 +18,7 @@ herramienta del navegador y el endpoint son la misma capacidad.
 
 from __future__ import annotations
 
+import os
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from datetime import date
@@ -42,7 +43,32 @@ __all__ = [
     "crear_app",
 ]
 
-DIRECTORIO_ESTATICOS: Final = Path(__file__).resolve().parents[2] / "static"
+def _resolver_estaticos() -> Path:
+    """Ubicar la vitrina tanto en el repo como dentro de la imagen instalada.
+
+    ``parents[2]`` resuelve a la raiz del repo en desarrollo, pero cuando el paquete
+    queda instalado en ``site-packages`` apunta fuera de el: el servicio desplegado
+    respondia HTTP 500 con ``/usr/local/lib/python3.12/static/index.html does not
+    exist``. Se prueban los candidatos en orden y gana el primero que exista, de modo
+    que un cambio de layout de despliegue no vuelva a romper la pagina.
+    """
+    if (crudo := os.environ.get("TENDERO_STATIC_DIR")):
+        return Path(crudo).resolve()
+    aqui = Path(__file__).resolve()
+    candidatos = (
+        aqui.parents[2] / "static",  # repo: src/tendero/api.py -> ./static
+        aqui.parent / "static",  # instalado como package data
+        Path.cwd() / "static",  # WORKDIR de la imagen
+    )
+    for candidato in candidatos:
+        if (candidato / "index.html").is_file():
+            return candidato
+    # Ninguno existe: se devuelve el del repo para que el error nombre la ruta
+    # esperada en vez de una cadena vacia.
+    return candidatos[0]
+
+
+DIRECTORIO_ESTATICOS: Final = _resolver_estaticos()
 """Carpeta con la vitrina; se sirve tal cual, sin build ni empaquetador."""
 
 ARCHIVO_INDEX: Final = DIRECTORIO_ESTATICOS / "index.html"
