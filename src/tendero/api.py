@@ -43,6 +43,7 @@ __all__ = [
     "crear_app",
 ]
 
+
 def _resolver_estaticos() -> Path:
     """Ubicar la vitrina tanto en el repo como dentro de la imagen instalada.
 
@@ -52,7 +53,7 @@ def _resolver_estaticos() -> Path:
     exist``. Se prueban los candidatos en orden y gana el primero que exista, de modo
     que un cambio de layout de despliegue no vuelva a romper la pagina.
     """
-    if (crudo := os.environ.get("TENDERO_STATIC_DIR")):
+    if crudo := os.environ.get("TENDERO_STATIC_DIR"):
         return Path(crudo).resolve()
     aqui = Path(__file__).resolve()
     candidatos = (

@@ -102,7 +102,7 @@ CLASES_DOMINIO = {
 # Utilidades comunes a los dos lados
 # --------------------------------------------------------------------------- #
 
-type Json = None | bool | int | float | str | Sequence[Json] | Mapping[str, Json]
+type Json = bool | int | float | str | Sequence[Json] | Mapping[str, Json] | None
 """Lo que sobrevive a un viaje por JSON, que es como los casos llegan a node.
 
 Se escribe con ``Sequence``/``Mapping`` y no con ``list``/``dict`` porque son
