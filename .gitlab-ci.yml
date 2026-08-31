@@ -46,10 +46,19 @@ unit:
     paths: [coverage-unit.xml]
     expire_in: 1 week
 
+# Integration suite. It lives in `tests/api/` and not in a `tests/integration/`
+# directory: the tests drive the real FastAPI application through TestClient
+# across its whole HTTP surface -- the six `/api/<herramienta>` routes end to
+# end, /health, /api/contexto, /openapi.json, the static mount and the app
+# factory with no static directory at all -- with nothing mocked. That is what
+# this job is for, so the job points at the tests that exist. This path was
+# `tests/integration`, a directory this repository has never had, so the job
+# died on `file or directory not found` and the integration stage was never
+# actually running.
 integration:
   stage: test
   script:
-    - pytest tests/integration -v --junitxml=report-integration.xml
+    - pytest tests/api -v --junitxml=report-integration.xml
         --cov=src/tendero --cov-append --cov-report=xml:coverage-integration.xml
   artifacts:
     when: always
