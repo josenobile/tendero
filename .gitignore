@@ -1,0 +1,19 @@
+# entorno
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# herramientas
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# arnes headless de la vitrina, generado en caliente
+static/__*.html

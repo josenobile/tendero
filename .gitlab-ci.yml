@@ -1,0 +1,123 @@
+# Shared pipeline for the hackathon fleet repos.
+# CI is the source of truth — nothing is "done" until this is green.
+# Tests run HERE, never fanned out locally: this is a memory-constrained WSL2 host
+# that agent fan-out has crashed three times (see AGENTS.md RULE ZERO).
+
+stages: [lint, test, quality, e2e, build]
+
+default:
+  image: python:3.12-slim
+  interruptible: true
+  before_script:
+    - pip install --quiet --upgrade pip
+    - pip install --quiet -e ".[dev]"
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  COVERAGE_FLOOR: "85"
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths: [.cache/pip]
+
+# ---------------------------------------------------------------- lint
+ruff:
+  stage: lint
+  script:
+    - ruff check src tests
+    - ruff format --check src tests
+
+mypy:
+  stage: lint
+  script:
+    - mypy --strict src
+
+# ---------------------------------------------------------------- test
+unit:
+  stage: test
+  script:
+    - pytest tests -v --junitxml=report-unit.xml
+        --cov=src/tendero --cov-report=xml:coverage-unit.xml --cov-report=term
+  artifacts:
+    when: always
+    reports:
+      junit: report-unit.xml
+      coverage_report: {coverage_format: cobertura, path: coverage-unit.xml}
+    paths: [coverage-unit.xml]
+    expire_in: 1 week
+
+integration:
+  stage: test
+  script:
+    - pytest tests/integration -v --junitxml=report-integration.xml
+        --cov=src/tendero --cov-append --cov-report=xml:coverage-integration.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report-integration.xml
+    paths: [coverage-integration.xml]
+    expire_in: 1 week
+
+# ---------------------------------------------------------------- quality gate
+coverage-gate:
+  stage: quality
+  needs: [unit, integration]
+  script:
+    - pip install --quiet coverage
+    - coverage combine || true
+    - |
+      python - <<'PY'
+      import sys, xml.etree.ElementTree as ET, glob, os
+      floor = float(os.environ.get("COVERAGE_FLOOR", "85"))
+      worst = 100.0
+      for f in glob.glob("coverage-*.xml"):
+          r = ET.parse(f).getroot()
+          pct = float(r.get("line-rate", 0)) * 100
+          print(f"{f}: {pct:.2f}%")
+          worst = min(worst, pct)
+      print(f"floor={floor}%  worst={worst:.2f}%")
+      if worst < floor:
+          sys.exit(f"COVERAGE GATE FAILED: {worst:.2f}% < {floor}%")
+      print("coverage gate PASSED")
+      PY
+  coverage: '/floor=\d+%\s+worst=(\d+\.\d+)%/'
+
+# ---------------------------------------------------------------- e2e
+e2e:
+  stage: e2e
+  needs: [coverage-gate]
+  script:
+    # E2E runs against the DEPLOYED url, never localhost — code review and unit
+    # tests are not proof. Artifacts are kept so every claim points at a file.
+    - test -n "$E2E_BASE_URL" || { echo "E2E_BASE_URL not set"; exit 1; }
+    - pytest tests/e2e -v --base-url "$E2E_BASE_URL" --junitxml=report-e2e.xml
+  artifacts:
+    when: always
+    reports: {junit: report-e2e.xml}
+    paths: [report-e2e.xml, e2e-artifacts/]
+    expire_in: 1 month
+  rules:
+    - if: $E2E_BASE_URL
+
+# ---------------------------------------------------------------- build
+build:
+  stage: build
+  needs: [coverage-gate]
+  script:
+    - pip install --quiet build
+    - python -m build
+  artifacts:
+    paths: [dist/]
+    expire_in: 1 week
+
+# ---------------------------------------------------------------- secret scan
+# Every artifact is scanned before it can leave the pipeline.
+secret-scan:
+  stage: quality
+  script:
+    - |
+      if grep -rIn --exclude-dir=.git \
+          -E '(Bearer [A-Za-z0-9._-]{20,}|AIza[0-9A-Za-z_-]{35}|glpat-[0-9A-Za-z_-]{20}|-----BEGIN [A-Z ]*PRIVATE KEY-----)' . ; then
+        echo "SECRET-LIKE STRING FOUND — refusing to publish"; exit 1
+      fi
+      echo "secret scan clean"
