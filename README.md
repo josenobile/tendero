@@ -2,13 +2,13 @@
 
 > **Shopify's WebMCP tools assume a prepaid card, a street address and a
 > self-serve checkout. A Colombian sale is none of those — Tendero registers the
-> six tools a Latin American sale actually requires.**
+> eight tools a Latin American sale actually requires.**
 
 Built for the OpenAI **WebMCP Challenge**. MIT licensed. Spanish-language
 storefront, English documentation.
 
 - **Live storefront:** _(see [Deploy](#deploy) — one file, one process, no build step)_
-- **Video:** _(under 3 minutes, walking through the six tools and the dynamic surface)_
+- **Video:** _(under 3 minutes, walking through the eight tools and the dynamic surface)_
 
 ---
 
@@ -43,12 +43,14 @@ instead of VAT. A seven-line cart already forces five different liquidations.
 
 ---
 
-## The six tools
+## The eight tools
 
-Each tool exists because a specific Colombian rule makes the generic version
-wrong. Every one is registered with a full JSON Schema and a description written
-for an agent to read — the descriptions cite the statute, because an agent that
-cannot cite the rule will invent one.
+The first six exist because a specific Colombian rule makes the generic version
+wrong. The last two exist because an agent must be able to *build* the order, not
+just read it: the cart is browser state, so the tools that write it are
+page-only wrappers with no route. Every one is registered with a full JSON
+Schema and a description written for an agent to read — the descriptions cite
+the statute, because an agent that cannot cite the rule will invent one.
 
 ### 1. `buscar_productos` — the price is a function of the destination
 
@@ -150,6 +152,29 @@ year computing last year's ceilings.
 
 `readOnlyHint` · `untrustedContentHint` (carrier-sourced reasons)
 
+### 7. `agregar_al_carrito` — the door to the surface
+
+The cart is page state, not backend state, so the tool that writes it has no
+route: it is a thin wrapper over the page's own `agregar(sku, delta)`. Each line
+is free text (`consulta`, resolved with the same accent-tolerant search as
+`buscar_productos`) or an exact `sku`, plus a quantity. A free-text line that
+matches more than one reference is **never guessed**: the tool returns the
+candidates and asks the agent to disambiguate; a line that matches nothing comes
+back `isError` with the search term named. It returns the recomputed cart, and
+it is the first move of the growth mechanic — the first reference moves the page
+from rung 0 to rung 1, no human click in between.
+
+`readOnlyHint: false` · `idempotentHint: false` — it writes, and twice is not the same as once.
+
+### 8. `quitar_del_carrito` — the way back out
+
+Removes units of a reference by `sku`; omit `cantidad` to drop the whole line.
+It is the exact inverse of `agregar_al_carrito` over the same page function, so
+there is no second cart logic to drift, and an empty cart sends the surface back
+to rung 0.
+
+`readOnlyHint: false` · `idempotentHint: false`
+
 ---
 
 ## The dynamic surface
@@ -164,17 +189,18 @@ The surface has three rungs, and **each gate has a reason, not a rule**:
 
 | Cart state | Tools exposed | Why the others are absent |
 | --- | --- | --- |
-| **Empty** | `buscar_productos`, `validar_documento_dian` | The other four describe *an order*. With an empty cart they have nothing to operate on, and offering them invites an agent to hallucinate one. |
+| **Empty** | `buscar_productos`, `validar_documento_dian`, `agregar_al_carrito`, `quitar_del_carrito` | The other four describe *an order*. With an empty cart they have nothing to operate on, and offering them invites an agent to hallucinate one. The cart writers stay: they are how the order gets built in the first place. |
 | **Has items** | + `calcular_total_con_iva`, `consultar_derecho_retracto`, `cotizar_envio` | Now there is an order: it can be liquidated, its withdrawal window computed, and its freight quoted. Payment still cannot be discussed — the rails depend on the municipality. |
 | **Destination set** | + `metodos_de_pago` | The rails are a function of the destination. |
 
 Two things make this more than a counter going up:
 
-**The agent moves the surface itself.** `cotizar_envio` is the one tool marked
-`readOnlyHint: false`: quoting freight *fixes the page's destination*, which is
-exactly what a shopper does when they type their city. So an agent that calls
-`cotizar_envio("Leticia")` moves the page from rung 1 to rung 2 and
-`metodos_de_pago` appears for it — no human click in between.
+**The agent moves the surface itself.** The two cart writers and `cotizar_envio`
+are the tools marked `readOnlyHint: false`: adding a reference creates the order,
+and quoting freight *fixes the page's destination*, which is exactly what a
+shopper does when they type their city. So an agent that calls
+`agregar_al_carrito` and then `cotizar_envio("Leticia")` walks the page from
+rung 0 to rung 2 and `metodos_de_pago` appears for it — no human click in between.
 
 **The description mutates with the state.** When the selected destination is one
 of the seven road-less municipalities, `metodos_de_pago` is re-registered with a
@@ -206,8 +232,9 @@ because the human controls and the agent tools call the same code path.
 
 ```
 static/index.html      one self-contained file: inline CSS + JS, no CDN, no build
-       │               registers the six tools, paints every result
-       ▼  POST /api/<tool-name>            ← one route per tool, same name
+       │               registers the eight tools, paints every result
+       │               (the two cart writers are page-only: the cart is browser state)
+       ▼  POST /api/<tool-name>            ← one route per domain tool, same name
 src/tendero/api.py     FastAPI. Translation only. No business logic.
        ▼
 src/tendero/domain/    pure rules: no network, no disk, no clock
@@ -296,7 +323,7 @@ the six routes.
 - The PEP (Permiso Especial de Permanencia) was superseded in practice by the PPT
   (Decreto 216 de 2021). It is kept because it still appears in pre-2021 customer
   records and DIAN still publishes code 47.
-- All six tools are advisory. None of them takes the customer's money — the human
+- All eight tools are advisory. None of them takes the customer's money — the human
   still commits the purchase.
 
 ## Disclosure

@@ -31,6 +31,13 @@ HERRAMIENTAS = (
 )
 """Las seis capacidades, con el nombre exacto que usan la ruta y la herramienta."""
 
+SOLO_PAGINA = (
+    "agregar_al_carrito",
+    "quitar_del_carrito",
+)
+"""Las dos herramientas que solo registra la pagina: envuelven el carrito del
+navegador, que no vive en el backend, asi que no tienen ruta."""
+
 ASEO = [{"sku": "ASE-JAB-X3", "cantidad": 2}]
 MERCADO = [
     {"sku": "FRU-PLA-LB", "cantidad": 2},
@@ -564,11 +571,11 @@ def _vitrina() -> str:
     return ARCHIVO_INDEX.read_text(encoding="utf-8")
 
 
-def test_la_vitrina_registra_exactamente_las_seis_herramientas() -> None:
+def test_la_vitrina_registra_las_seis_rutas_mas_las_dos_del_carrito() -> None:
     """El nombre de la herramienta y el de la ruta no pueden divergir."""
     html = _vitrina()
     declarados = set(re.findall(r'nombre: "(\w+)",\n    nivel:', html))
-    assert declarados == set(HERRAMIENTAS)
+    assert declarados == set(HERRAMIENTAS) | set(SOLO_PAGINA)
 
 
 def test_la_vitrina_apunta_a_las_rutas_reales(cliente: TestClient) -> None:
@@ -588,17 +595,18 @@ def test_la_vitrina_usa_la_api_webmcp_esperada() -> None:
 
 
 def test_toda_herramienta_declara_sus_anotaciones() -> None:
-    """readOnlyHint y untrustedContentHint tienen que estar en las seis."""
+    """readOnlyHint y untrustedContentHint tienen que estar en las ocho."""
     html = _vitrina()
-    assert html.count("readOnlyHint:") == len(HERRAMIENTAS)
-    assert html.count("untrustedContentHint:") == len(HERRAMIENTAS)
+    total = len(HERRAMIENTAS) + len(SOLO_PAGINA)
+    assert html.count("readOnlyHint:") == total
+    assert html.count("untrustedContentHint:") == total
 
 
 def test_la_superficie_es_escalonada_y_no_plana() -> None:
     """Si todas las herramientas viven en el nivel 0, no hay superficie dinamica."""
     niveles = [int(n) for n in re.findall(r"nivel: (\d),", _vitrina())]
-    assert len(niveles) == len(HERRAMIENTAS)
-    assert sorted(niveles) == [0, 0, 1, 1, 1, 2]
+    assert len(niveles) == len(HERRAMIENTAS) + len(SOLO_PAGINA)
+    assert sorted(niveles) == [0, 0, 0, 0, 1, 1, 1, 2]
 
 
 def test_la_vitrina_no_depende_de_ninguna_red_externa() -> None:
@@ -620,8 +628,10 @@ def test_los_esquemas_de_entrada_son_json_schema_valido() -> None:
     html = _vitrina()
     for bruto in re.findall(r'\{ type: "string", enum: \[([^\]]*)\]', html):
         assert bruto.strip()
-    assert html.count('type: "object"') == len(HERRAMIENTAS)
-    assert html.count("additionalProperties: false") == len(HERRAMIENTAS)
+    total = len(HERRAMIENTAS) + len(SOLO_PAGINA)
+    # +1: el objeto anidado de cada linea de `lineas` en agregar_al_carrito
+    assert html.count('type: "object"') == total + 1
+    assert html.count("additionalProperties: false") == total + 1
 
 
 def test_la_documentacion_declara_el_codigo_preexistente() -> None:
