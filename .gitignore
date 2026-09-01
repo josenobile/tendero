@@ -17,3 +17,4 @@ htmlcov/
 
 # arnes headless de la vitrina, generado en caliente
 static/__*.html
+.wrangler/
