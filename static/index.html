@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Surtitienda La Milagrosa — Tendero WebMCP</title>
-<meta name="description" content="Vitrina colombiana que registra seis herramientas WebMCP: IVA por destino, flete, contra entrega, documento DIAN, derecho de retracto y rieles de pago.">
+<meta name="description" content="Vitrina colombiana que registra ocho herramientas WebMCP: carrito, IVA por destino, flete, contra entrega, documento DIAN, derecho de retracto y rieles de pago.">
 <style>
 :root{
   --crema:#faf7f2; --superficie:#ffffff; --superficie-2:#f3efe7;
@@ -204,14 +204,14 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
   <strong>Este navegador no expone <code>document.modelContext</code>.</strong>
   La tienda funciona igual: podés buscar, armar el carrito, cotizar el envío, liquidar el IVA,
   consultar el retracto y ver los medios de pago con los controles de la página. Lo único que
-  no ocurre es el registro de las seis herramientas para un agente. Abrila en un navegador con
+  no ocurre es el registro de las ocho herramientas para un agente. Abrila en un navegador con
   WebMCP (ChatGPT Atlas, o Chrome con el flag de WebMCP) para ver la superficie dinámica.
 </div>
 
 <div class="aviso info" id="aviso-como">
   <strong>Cómo se prueba con un agente.</strong> Pedile algo que un catálogo de herramientas
   gringo no sabe responder: <em>«agregá jabón y leche, cotizá el envío a Leticia y decime cómo
-  puede pagar el cliente»</em>. Vas a ver la superficie crecer de 2 a 6 herramientas y cada
+  puede pagar el cliente»</em>. Vas a ver la superficie crecer de 4 a 8 herramientas y cada
   resultado pintarse en esta misma página.
 </div>
 
@@ -343,7 +343,7 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
   tarifas de transportadora y datos del comercio son ficticios; las reglas tributarias, los
   topes de recaudo, el calendario de festivos y el dígito de verificación del NIT son reales.
   Código abierto bajo licencia MIT.</p>
-  <p>Las seis herramientas se resuelven <strong>dentro de la página</strong>, contra
+  <p>Las ocho herramientas se resuelven <strong>dentro de la página</strong>, contra
   <code>dominio.js</code>: sin backend, sin red y sin build. El servidor FastAPI del
   repositorio queda como implementación de referencia y como banco de pruebas — sus 363
   pruebas son las que fijan cada cifra que ves acá.</p>
@@ -353,11 +353,11 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
 "use strict";
 
 /* ===================================================================== *
- *  Tendero — vitrina + seis herramientas WebMCP
+ *  Tendero — vitrina + ocho herramientas WebMCP
  *
  *  La página hace tres cosas a la vez:
  *   1. es una tienda que una persona puede usar sin agente ninguno;
- *   2. registra seis herramientas en document.modelContext;
+ *   2. registra ocho herramientas en document.modelContext;
  *   3. cambia ese conjunto de herramientas según el estado del carrito,
  *      y se entera del cambio escuchando el evento "toolchange" — no su
  *      propia contabilidad, sino la verdad del navegador.
@@ -365,7 +365,7 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
  *  Toda herramienta pinta su resultado en el DOM. Si un agente llama algo
  *  y la pantalla no cambia, para el humano que mira no pasó nada.
  *
- *  SIN BACKEND. Las seis herramientas no llaman a ningún servidor: resuelven
+ *  SIN BACKEND. Las ocho herramientas no llaman a ningún servidor: resuelven
  *  contra `dominio.js`, que es el port a JavaScript del dominio colombiano
  *  probado en Python. Eso importa por tres razones:
  *
@@ -661,10 +661,79 @@ const acciones = {
     pintarPagos(datos, origen);
     return datos;
   },
+
+  async agregar_al_carrito(args, origen) {
+    const lineas = Array.isArray(args.lineas) ? args.lineas : [];
+    if (!lineas.length) throw new Error("falta `lineas`: una lista de { consulta o sku, cantidad }");
+    const agregadas = [];
+    const ambiguas = [];
+    for (const [i, cruda] of lineas.entries()) {
+      const l = cruda ?? {};
+      if (!l.consulta && !l.sku) {
+        throw new Error("la línea " + (i + 1) + " necesita `consulta` o `sku`");
+      }
+      const cantidad = Math.max(1, Math.trunc(l.cantidad ?? 1));
+      let sku = typeof l.sku === "string" ? l.sku.trim().toUpperCase() : "";
+      if (sku) {
+        if (!estado.indice.has(sku)) {
+          throw new Error("el sku «" + l.sku + "» no existe en el catálogo: usá buscar_productos para ver los sku vigentes");
+        }
+        agregar(sku, cantidad);
+        agregadas.push({ sku, nombre: estado.indice.get(sku).nombre, cantidad });
+        continue;
+      }
+      const consulta = String(l.consulta).trim();
+      if (!consulta) {
+        throw new Error("la línea " + (i + 1) + " tiene `consulta` vacía: enviá el texto o el sku");
+      }
+      const datos = D.buscar_productos({ consulta, destino: estado.destino?.codigo_dane ?? null });
+      if (!datos.productos.length) {
+        throw new Error(
+          "sin coincidencias para «" + consulta + "»: probá con buscar_productos para ver el vocabulario del catálogo" +
+          (agregadas.length ? " (esta llamada ya agregó: " + agregadas.map((a) => a.nombre + " ×" + a.cantidad).join(", ") + ")" : "")
+        );
+      }
+      if (datos.productos.length > 1) {
+        ambiguas.push({
+          consulta,
+          candidatas: datos.productos.map((p) => ({ sku: p.sku, nombre: p.nombre })),
+        });
+        continue;
+      }
+      sku = datos.productos[0].sku;
+      agregar(sku, cantidad);
+      agregadas.push({ sku, nombre: datos.productos[0].nombre, cantidad });
+    }
+    return {
+      agregadas,
+      ambiguas,
+      carrito: items(),
+      unidades: items().reduce((suma, l) => suma + l.cantidad, 0),
+    };
+  },
+
+  async quitar_del_carrito(args, origen) {
+    const sku = typeof args.sku === "string" ? args.sku.trim().toUpperCase() : "";
+    if (!sku) throw new Error("falta el sku: la referencia a quitar, p. ej. 'ASE-JAB-X3'");
+    if (!estado.carrito.has(sku)) {
+      throw new Error(
+        "el sku «" + sku + "» no está en el carrito" +
+        (items().length ? ": el carrito tiene " + items().map((l) => l.sku + " ×" + l.cantidad).join(", ") : " (está vacío)")
+      );
+    }
+    const antes = estado.carrito.get(sku);
+    const unidades = args.cantidad == null ? antes : Math.max(1, Math.trunc(args.cantidad));
+    agregar(sku, -unidades);
+    return {
+      quitado: { sku, nombre: estado.indice.get(sku)?.nombre ?? sku, unidades, restante: estado.carrito.get(sku) ?? 0 },
+      carrito: items(),
+      unidades: items().reduce((suma, l) => suma + l.cantidad, 0),
+    };
+  },
 };
 
 /* --------------------------------------------------------------------- *
- *  Las seis herramientas
+ *  Las ocho herramientas
  *
  *  `nivel` es el escalón del carrito en el que la herramienta aparece.
  *  `descripcion(estado)` devuelve texto que puede cambiar con el destino:
@@ -725,6 +794,80 @@ const HERRAMIENTAS = [
     resumen: (d) => d.valido
       ? `VÁLIDO ${d.formateado} (${d.nombre_tipo}, código DIAN ${d.codigo_dian}${d.dv_calculado ? ", DV calculado" : ""}).`
       : `INVÁLIDO: ${d.mensaje}`,
+  },
+  {
+    nombre: "agregar_al_carrito",
+    nivel: 0,
+    porque: "es la puerta: sin carrito no hay nada que cotizar, liquidar ni pagar",
+    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false, untrustedContentHint: false },
+    descripcion: () =>
+      "Agrega referencias al carrito de la página — la puerta de entrada de toda la superficie: con el carrito " +
+      "vacío solo existen buscar_productos, validar_documento_dian y estas dos herramientas, y al entrar la " +
+      "primera referencia aparecen calcular_total_con_iva, consultar_derecho_retracto y cotizar_envio. Cada " +
+      "línea lleva `consulta` (texto libre tal como lo pidió el cliente: 'jabón', 'leche', resuelto con la " +
+      "misma búsqueda de buscar_productos, que tolera tildes y mayúsculas) o el `sku` exacto, más su " +
+      "`cantidad`. Si la consulta coincide con varias referencias, esta herramienta NO adivina: devuelve las " +
+      "candidatas y espera que elijas. Devuelve el carrito resultante, ya recalculado. ESTA HERRAMIENTA " +
+      "MODIFICA LA PÁGINA: pinta el carrito, crece la superficie de herramientas y recalcula lo que la página " +
+      "ya había pintado.",
+    esquema: () => ({
+      type: "object",
+      properties: {
+        lineas: {
+          type: "array",
+          description: "Líneas a agregar, en el orden pedido. Cada una lleva `consulta` o `sku` (uno solo) y su `cantidad`.",
+          items: {
+            type: "object",
+            properties: {
+              consulta: { type: "string", description: "Texto libre, p. ej. 'jabón' o 'leche'. Se resuelve contra el catálogo con la misma búsqueda de buscar_productos. Si cae en varias referencias, la herramienta no adivina: las devuelve como candidatas." },
+              sku: { type: "string", description: "SKU exacto, p. ej. 'ASE-JAB-X3'; si se envía, salta la búsqueda por texto. Se consigue con buscar_productos." },
+              cantidad: { type: "integer", minimum: 1, description: "Unidades a agregar a esa referencia. Por defecto 1." },
+            },
+            required: ["cantidad"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["lineas"],
+      additionalProperties: false,
+    }),
+    resumen: (d) => (d.agregadas.length
+      ? "Agregado al carrito: " + d.agregadas.map((a) => a.nombre + " ×" + a.cantidad).join(", ") + ". "
+      : "Nada agregado. ")
+      + "Carrito: " + (d.carrito.length
+        ? d.carrito.map((l) => l.sku + " ×" + l.cantidad).join(", ") + " (" + d.unidades + " unidades)"
+        : "vacío")
+      + (d.ambiguas.length
+        ? ". Sin agregar, elegí una de las candidatas: " + d.ambiguas.map((a) => "«" + a.consulta + "» → " +
+            a.candidatas.map((c) => c.nombre + " (" + c.sku + ")").join(" | ")).join("; ")
+        : ""),
+  },
+  {
+    nombre: "quitar_del_carrito",
+    nivel: 0,
+    porque: "siempre se puede deshacer, con carrito o sin él",
+    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false, untrustedContentHint: false },
+    descripcion: () =>
+      "Quita unidades de una referencia del carrito de la página; si se omite `cantidad`, quita la línea " +
+      "entera. Es la inversión exacta de agregar_al_carrito: ambas escriben el carrito de la página, que es el " +
+      "estado que despierta el resto de la superficie — si el carrito queda vacío, la superficie vuelve al " +
+      "nivel cero y se retiran las herramientas que solo tenían sentido con un pedido. El `sku` es el mismo " +
+      "que devuelven buscar_productos y el propio carrito. Devuelve el carrito resultante, ya recalculado. " +
+      "ESTA HERRAMIENTA MODIFICA LA PÁGINA: pinta el carrito y ajusta la superficie de herramientas.",
+    esquema: () => ({
+      type: "object",
+      properties: {
+        sku: { type: "string", description: "SKU exacto de la referencia a quitar, p. ej. 'ASE-JAB-X3'. El mismo que devuelven buscar_productos y el carrito." },
+        cantidad: { type: "integer", minimum: 1, description: "Unidades a quitar. Si se omite, se quita la línea completa." },
+      },
+      required: ["sku"],
+      additionalProperties: false,
+    }),
+    resumen: (d) => "Quitado del carrito: " + d.quitado.nombre +
+      (d.quitado.restante ? " ×" + d.quitado.unidades + ", quedan " + d.quitado.restante : " (línea eliminada)") +
+      ". Carrito: " + (d.carrito.length
+        ? d.carrito.map((l) => l.sku + " ×" + l.cantidad).join(", ") + " (" + d.unidades + " unidades)"
+        : "vacío") + ".",
   },
   {
     nombre: "calcular_total_con_iva",
@@ -967,7 +1110,7 @@ function pintarSuperficie() {
     ? registradas.size + " de " + HERRAMIENTAS.length + " registradas"
     : "0 de " + HERRAMIENTAS.length + " · navegador sin WebMCP";
   $("explica-nivel").textContent = [
-    "Con el carrito vacío solo tiene sentido consultar el catálogo y validar una identidad: las otras cuatro herramientas no tendrían sobre qué operar.",
+    "Con el carrito vacío tiene sentido consultar el catálogo, validar una identidad y armar o deshacer el carrito: las otras cuatro herramientas no tendrían sobre qué operar.",
     "Con productos en el carrito aparecen las tres que hablan de ESTE pedido: impuestos, retracto y flete. Falta el destino para poder hablar de pagos.",
     "Con destino fijado se habilita metodos_de_pago, y su descripción cambia si ese municipio no tiene carretera o está excluido del IVA.",
   ][nivel];
@@ -1064,8 +1207,8 @@ async function arrancar() {
     if (typeof mc.addEventListener === "function") {
       mc.addEventListener("toolchange", () => {
         const n = registradas.size;
-        anotar("cambio", "toolchange", n + " de 6 herramientas expuestas · nivel " + nivelActual());
-        $("sub-superficie").textContent = n + " de 6 registradas";
+        anotar("cambio", "toolchange", n + " de " + HERRAMIENTAS.length + " herramientas expuestas · nivel " + nivelActual());
+        $("sub-superficie").textContent = n + " de " + HERRAMIENTAS.length + " registradas";
       });
     }
   } else {
@@ -1111,7 +1254,7 @@ async function arrancar() {
   }
 
   sincronizarSuperficie();
-  anotar("cambio", "listo", (mc ? "seis herramientas disponibles por escalones" : "modo sin agente") +
+  anotar("cambio", "listo", (mc ? HERRAMIENTAS.length + " herramientas disponibles por escalones" : "modo sin agente") +
     " · " + ctx.ciudades.length + " municipios · " + ctx.metodos_pago.length + " rieles de pago");
 }
 
