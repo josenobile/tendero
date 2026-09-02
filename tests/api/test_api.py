@@ -34,6 +34,7 @@ HERRAMIENTAS = (
 SOLO_PAGINA = (
     "agregar_al_carrito",
     "quitar_del_carrito",
+    "confirmar_pedido",
 )
 """Las dos herramientas que solo registra la pagina: envuelven el carrito del
 navegador, que no vive en el backend, asi que no tienen ruta."""
@@ -606,7 +607,8 @@ def test_la_superficie_es_escalonada_y_no_plana() -> None:
     """Si todas las herramientas viven en el nivel 0, no hay superficie dinamica."""
     niveles = [int(n) for n in re.findall(r"nivel: (\d),", _vitrina())]
     assert len(niveles) == len(HERRAMIENTAS) + len(SOLO_PAGINA)
-    assert sorted(niveles) == [0, 0, 0, 0, 1, 1, 1, 2]
+    # Three rungs: 4 always-on, 3 unlocked by a cart, 2 (payment + order) needing a destination.
+    assert sorted(niveles) == [0, 0, 0, 0, 1, 1, 1, 2, 2]
 
 
 def test_la_vitrina_no_depende_de_ninguna_red_externa() -> None:
@@ -614,7 +616,11 @@ def test_la_vitrina_no_depende_de_ninguna_red_externa() -> None:
     html = _vitrina()
     assert 'src="http' not in html
     assert 'href="http' not in html
-    assert "<link" not in html
+    # A self-contained data: URI (e.g. an inline SVG favicon) is not a remote source; only
+    # forbid <link> that reaches the network.
+    assert 'link rel="stylesheet"' not in html
+    for link in re.findall(r'<link[^>]*href="([^"]*)"', html):
+        assert link.startswith("data:"), f"link no autocontenido: {link[:40]}"
 
 
 def test_el_arnes_de_pruebas_del_navegador_no_se_publica() -> None:
@@ -630,8 +636,12 @@ def test_los_esquemas_de_entrada_son_json_schema_valido() -> None:
         assert bruto.strip()
     total = len(HERRAMIENTAS) + len(SOLO_PAGINA)
     # +1: el objeto anidado de cada linea de `lineas` en agregar_al_carrito
-    assert html.count('type: "object"') == total + 1
-    assert html.count("additionalProperties: false") == total + 1
+    assert html.count("esquema:") == total
+    # Every tool schema must be closed. Split on the per-tool `esquema:` factories so a
+    # nested object inside one schema (a buyer's `documento`) counts once, not twice.
+    bloques = html.split("esquema:")[1:]
+    assert len(bloques) == total
+    assert all("additionalProperties: false" in b.split("resumen:")[0] for b in bloques)
 
 
 def test_la_documentacion_declara_el_codigo_preexistente() -> None:

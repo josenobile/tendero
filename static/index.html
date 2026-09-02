@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Surtitienda La Milagrosa — Tendero WebMCP</title>
-<meta name="description" content="Vitrina colombiana que registra ocho herramientas WebMCP: carrito, IVA por destino, flete, contra entrega, documento DIAN, derecho de retracto y rieles de pago.">
+<meta name="description" content="Vitrina colombiana de surtitienda de barrio con herramientas WebMCP: carrito, IVA por destino, flete, contra entrega, documento DIAN, derecho de retracto y rieles de pago.">
 <style>
 :root{
   --crema:#faf7f2; --superficie:#ffffff; --superficie-2:#f3efe7;
@@ -38,6 +38,19 @@ h1,h2,h3{margin:0; line-height:1.2; letter-spacing:-.01em}
 a{color:var(--verde)}
 button{font:inherit; cursor:pointer}
 code,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* ---------- tesis: el titular que clasifica la pagina en cuatro segundos ---------- */
+.tesis{max-width:1400px; margin:0 auto; padding:1.15rem 1.1rem .35rem; display:flex; flex-direction:column; gap:.3rem}
+.tesis .rotulo{font-size:.66rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--verde)}
+.tesis p{margin:0; max-width:78ch}
+.tesis .es{font-size:1.1rem; font-weight:650; line-height:1.36; letter-spacing:-.012em}
+.tesis .en{font-size:.9rem; line-height:1.45; color:var(--tinta-2)}
+body.en .tesis .rotulo{order:0}
+body.en .tesis .en{order:1; font-size:1.1rem; font-weight:650; line-height:1.36; letter-spacing:-.012em; color:var(--tinta)}
+body.en .tesis .es{order:2; font-size:.9rem; font-weight:400; line-height:1.45; color:var(--tinta-2)}
+@media (max-width:640px){ .tesis .es,body.en .tesis .en{font-size:1rem} }
+a.pastilla{text-decoration:none}
+a.pastilla:hover{border-color:var(--verde); color:var(--verde)}
 
 /* ---------- encabezado ---------- */
 header{
@@ -173,6 +186,21 @@ td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
 .opcion .titulo{display:flex; gap:.5rem; align-items:baseline; font-weight:700; font-size:.86rem}
 .opcion .plata{margin-left:auto; font-variant-numeric:tabular-nums}
 .opcion ul{margin:.3rem 0 0; padding-left:1.05rem; font-size:.74rem; color:var(--tinta-2)}
+
+/* ---------- pedido: preparado por el agente, aprobado por un humano ---------- */
+.pedido{border:1px solid var(--borde); border-radius:12px; padding:.7rem .8rem; display:grid; gap:.45rem}
+.pedido.preparado{background:var(--ambar-claro); border-color:color-mix(in srgb,var(--ambar) 45%,transparent)}
+.pedido.aprobado{background:var(--verde-claro); border-color:color-mix(in srgb,var(--verde) 45%,transparent)}
+.fila-sellos{display:flex; gap:.4rem; flex-wrap:wrap}
+.sello{font-size:.7rem; font-weight:750; padding:.26rem .55rem; border-radius:999px; border:1px solid var(--borde); background:var(--superficie)}
+.sello.agente{background:var(--agente-claro); border-color:color-mix(in srgb,var(--agente) 40%,transparent); color:var(--agente)}
+.sello.espera{border-color:color-mix(in srgb,var(--ambar) 45%,transparent); color:var(--ambar)}
+.sello.doble{border-color:color-mix(in srgb,var(--verde) 50%,transparent); color:var(--verde)}
+.btn.grande{width:100%; padding:.8rem 1rem; font-size:1rem; border-radius:12px}
+.timbre{font:700 .78rem/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; text-align:center;
+  border:2px dashed color-mix(in srgb,var(--verde) 55%,transparent); border-radius:10px;
+  padding:.5rem .6rem; color:var(--verde); background:var(--superficie)}
+
 .campo{display:grid; gap:.3rem; margin-bottom:.6rem}
 .campo label{font-size:.74rem; font-weight:700; color:var(--tinta-2); text-transform:uppercase; letter-spacing:.03em}
 .duo{display:grid; grid-template-columns:1fr 1fr; gap:.6rem}
@@ -180,8 +208,19 @@ td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
 footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-size:.76rem; color:var(--tinta-2)}
 .oculto{display:none !important}
 </style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%23c62828%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-size=%2718%27 text-anchor=%27middle%27 fill=%27white%27 font-family=%27sans-serif%27%3ET%3C/text%3E%3C/svg%3E">
 </head>
 <body>
+
+<section class="tesis" aria-label="Tesis del proyecto">
+  <span class="rotulo" data-i18n="hero.rotulo">La tesis</span>
+  <p class="es">El catálogo de herramientas WebMCP por defecto —buscar, agregar al carrito, pagar— no es
+    neutral: exporta supuestos gringos, así que esta tienda registra las nueve herramientas que una venta
+    colombiana sí exige y deja el clic que la cierra en manos de una persona.</p>
+  <p class="en" lang="en">The default WebMCP tool set — search, add to cart, check out — is not neutral: it
+    exports US assumptions, so this store registers the nine tools a Colombian sale actually requires and
+    leaves the click that closes it to a human.</p>
+</section>
 
 <header>
   <div class="barra">
@@ -194,25 +233,29 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
     </div>
     <div class="crece"></div>
     <span class="pastilla" id="pastilla-nivel">carrito vacío</span>
-    <span class="pastilla" id="pastilla-webmcp"><span class="punto"></span><span id="texto-webmcp">detectando WebMCP…</span></span>
+    <span class="pastilla" id="pastilla-webmcp"><span class="punto"></span><span id="texto-webmcp" data-i18n="wm.detectando">detectando WebMCP…</span></span>
+    <a class="pastilla" id="lang-toggle" href="?lang=en" hreflang="en">English</a>
   </div>
 </header>
 
 <div class="envoltura">
 
 <div class="aviso alerta oculto" id="aviso-sin-webmcp">
-  <strong>Este navegador no expone <code>document.modelContext</code>.</strong>
-  La tienda funciona igual: podés buscar, armar el carrito, cotizar el envío, liquidar el IVA,
+  <strong data-i18n-html="sinwm.titulo">Este navegador no expone <code>document.modelContext</code>.</strong>
+  <span data-i18n="sinwm.antes">La tienda funciona igual: podés buscar, armar el carrito, cotizar el envío, liquidar el IVA,
   consultar el retracto y ver los medios de pago con los controles de la página. Lo único que
-  no ocurre es el registro de las ocho herramientas para un agente. Abrila en un navegador con
-  WebMCP (ChatGPT Atlas, o Chrome con el flag de WebMCP) para ver la superficie dinámica.
+  no ocurre es el registro de las</span> <span id="cuenta-aviso"></span>
+  <span data-i18n="sinwm.despues">herramientas para un agente. Abrila en un navegador con
+  WebMCP (ChatGPT Atlas, o Chrome con el flag de WebMCP) para ver la superficie dinámica.</span>
 </div>
 
 <div class="aviso info" id="aviso-como">
-  <strong>Cómo se prueba con un agente.</strong> Pedile algo que un catálogo de herramientas
-  gringo no sabe responder: <em>«agregá jabón y leche, cotizá el envío a Leticia y decime cómo
-  puede pagar el cliente»</em>. Vas a ver la superficie crecer de 4 a 8 herramientas y cada
-  resultado pintarse en esta misma página.
+  <strong data-i18n="demo.titulo">Cómo se prueba con un agente.</strong>
+  <span data-i18n="demo.antes">Pedile algo que un catálogo de herramientas
+  gringo no sabe responder:</span> <em>«agregá jabón y leche, cotizá el envío a Leticia y decime cómo
+  puede pagar el cliente»</em>. <span data-i18n="demo.medio">Vas a ver la superficie crecer de</span>
+  <span id="cuenta-inicial"></span> <span data-i18n="demo.a">a</span> <span id="cuenta-total"></span>
+  <span data-i18n="demo.despues">herramientas y cada resultado pintarse en esta misma página.</span>
 </div>
 
 <div class="tablero">
@@ -222,15 +265,15 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
 
     <section class="tarjeta" id="panel-catalogo">
       <header>
-        <h2>Catálogo</h2>
+        <h2 data-i18n="h.catalogo">Catálogo</h2>
         <span class="sub" id="sub-catalogo">24 referencias · 5 regímenes tributarios</span>
-        <span class="origen humano" id="origen-catalogo">página</span>
+        <span class="origen humano" id="origen-catalogo" data-i18n="origen.humano">página</span>
       </header>
       <div class="cuerpo">
         <div class="buscador">
-          <input type="search" id="q" placeholder="Buscar: café, leche, aseo, arepa…" style="flex:1 1 220px" aria-label="Buscar en el catálogo">
-          <button class="btn" id="btn-buscar">Buscar</button>
-          <button class="btn" id="btn-demo">Mercado de prueba</button>
+          <input type="search" id="q" placeholder="Buscar: café, leche, aseo, arepa…" data-i18n-ph="ph.buscar" style="flex:1 1 220px" aria-label="Buscar en el catálogo">
+          <button class="btn" id="btn-buscar" data-i18n="btn.buscar">Buscar</button>
+          <button class="btn" id="btn-demo" data-i18n="btn.demo">Mercado de prueba</button>
         </div>
         <div class="fichas" id="fichas"></div>
         <div class="rejilla" id="rejilla"><p class="hueco">cargando catálogo…</p></div>
@@ -241,54 +284,59 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
     <div class="paneles">
 
       <section class="tarjeta panel" id="panel-envio">
-        <header><h2>Envío</h2><span class="sub">cotizar_envio</span><span class="origen humano" id="origen-envio">—</span></header>
-        <div class="cuerpo" id="cuerpo-envio"><p class="hueco">Elegí un destino para cotizar el flete y saber si ahí hay contra entrega.</p></div>
+        <header><h2 data-i18n="h.envio">Envío</h2><span class="sub">cotizar_envio</span><span class="origen humano" id="origen-envio">—</span></header>
+        <div class="cuerpo" id="cuerpo-envio"><p class="hueco" data-i18n="hueco.envio">Elegí un destino para cotizar el flete y saber si ahí hay contra entrega.</p></div>
       </section>
 
       <section class="tarjeta panel" id="panel-iva">
-        <header><h2>Impuestos</h2><span class="sub">calcular_total_con_iva</span><span class="origen humano" id="origen-iva">—</span></header>
-        <div class="cuerpo" id="cuerpo-iva"><p class="hueco">Agregá algo al carrito para liquidar el IVA línea por línea.</p></div>
+        <header><h2 data-i18n="h.impuestos">Impuestos</h2><span class="sub">calcular_total_con_iva</span><span class="origen humano" id="origen-iva">—</span></header>
+        <div class="cuerpo" id="cuerpo-iva"><p class="hueco" data-i18n="hueco.iva">Agregá algo al carrito para liquidar el IVA línea por línea.</p></div>
       </section>
 
       <section class="tarjeta panel" id="panel-pagos">
-        <header><h2>Medios de pago</h2><span class="sub">metodos_de_pago</span><span class="origen humano" id="origen-pagos">—</span></header>
-        <div class="cuerpo" id="cuerpo-pagos"><p class="hueco">Con carrito y destino se evalúan los cinco rieles colombianos.</p></div>
+        <header><h2 data-i18n="h.pagos">Medios de pago</h2><span class="sub">metodos_de_pago</span><span class="origen humano" id="origen-pagos">—</span></header>
+        <div class="cuerpo" id="cuerpo-pagos"><p class="hueco" data-i18n="hueco.pagos">Con carrito y destino se evalúan los cinco rieles colombianos.</p></div>
       </section>
 
       <section class="tarjeta panel" id="panel-retracto">
-        <header><h2>Derecho de retracto</h2><span class="sub">consultar_derecho_retracto</span><span class="origen humano" id="origen-retracto">—</span></header>
+        <header><h2 data-i18n="h.retracto">Derecho de retracto</h2><span class="sub">consultar_derecho_retracto</span><span class="origen humano" id="origen-retracto">—</span></header>
         <div class="cuerpo">
           <div class="duo">
             <div class="campo">
-              <label for="fecha-entrega">Fecha de entrega</label>
+              <label for="fecha-entrega" data-i18n="lbl.fechaEntrega">Fecha de entrega</label>
               <input type="date" id="fecha-entrega">
             </div>
             <div class="campo">
-              <label for="modalidad">Modalidad de venta</label>
+              <label for="modalidad" data-i18n="lbl.modalidad">Modalidad de venta</label>
               <select id="modalidad"></select>
             </div>
           </div>
-          <button class="btn primario" id="btn-retracto">Calcular el plazo</button>
-          <div id="cuerpo-retracto"><p class="hueco" style="margin-top:.7rem">Art. 47 de la Ley 1480 de 2011: cinco días hábiles, contra el calendario real.</p></div>
+          <button class="btn primario" id="btn-retracto" data-i18n="btn.retracto">Calcular el plazo</button>
+          <div id="cuerpo-retracto"><p class="hueco" style="margin-top:.7rem" data-i18n="hueco.retracto">Art. 47 de la Ley 1480 de 2011: cinco días hábiles, contra el calendario real.</p></div>
         </div>
       </section>
 
       <section class="tarjeta panel" id="panel-documento">
-        <header><h2>Identidad DIAN</h2><span class="sub">validar_documento_dian</span><span class="origen humano" id="origen-documento">—</span></header>
+        <header><h2 data-i18n="h.documento">Identidad DIAN</h2><span class="sub">validar_documento_dian</span><span class="origen humano" id="origen-documento">—</span></header>
         <div class="cuerpo">
           <div class="duo">
             <div class="campo">
-              <label for="tipo-doc">Tipo</label>
+              <label for="tipo-doc" data-i18n="lbl.tipoDoc">Tipo</label>
               <select id="tipo-doc"></select>
             </div>
             <div class="campo">
-              <label for="num-doc">Número</label>
+              <label for="num-doc" data-i18n="lbl.numDoc">Número</label>
               <input type="text" id="num-doc" placeholder="890.903.938" autocomplete="off">
             </div>
           </div>
-          <button class="btn primario" id="btn-doc">Validar ante la DIAN</button>
-          <div id="cuerpo-documento"><p class="hueco" style="margin-top:.7rem">Sin tipo válido y, en un NIT, sin dígito de verificación correcto, la DIAN rechaza la factura entera.</p></div>
+          <button class="btn primario" id="btn-doc" data-i18n="btn.doc">Validar ante la DIAN</button>
+          <div id="cuerpo-documento"><p class="hueco" style="margin-top:.7rem" data-i18n="hueco.documento">Sin tipo válido y, en un NIT, sin dígito de verificación correcto, la DIAN rechaza la factura entera.</p></div>
         </div>
+      </section>
+
+      <section class="tarjeta panel" id="panel-pedido">
+        <header><h2 data-i18n="h.pedido">Confirmación del pedido</h2><span class="sub">confirmar_pedido</span><span class="origen humano" id="origen-pedido">—</span></header>
+        <div class="cuerpo" id="cuerpo-pedido"><p class="hueco" data-i18n-html="hueco.pedido">Todavía no hay pedido preparado. Cuando el agente llame <code>confirmar_pedido</code> (con carrito y destino fijados), el pedido aparece acá con su línea por línea, su flete, su tope de pago y su plazo de retracto — y con un botón: el agente prepara, la persona decide si lo convierte en venta.</p></div>
       </section>
 
     </div>
@@ -298,26 +346,26 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
   <div class="columna pegajoso">
 
     <section class="tarjeta">
-      <header><h2>Carrito</h2><span class="sub" id="sub-carrito">vacío</span></header>
+      <header><h2 data-i18n="h.carrito">Carrito</h2><span class="sub" id="sub-carrito">vacío</span></header>
       <div class="cuerpo">
-        <ul class="lineas" id="lineas"><li class="vacio">Todavía no hay nada en el carrito.</li></ul>
+        <ul class="lineas" id="lineas"><li class="vacio" data-i18n="carrito.vacioLargo">Todavía no hay nada en el carrito.</li></ul>
         <div class="campo" style="margin-top:.8rem">
-          <label for="destino">Destino del pedido</label>
+          <label for="destino" data-i18n="lbl.destino">Destino del pedido</label>
           <select id="destino"><option value="">— elegir municipio —</option></select>
         </div>
         <div id="resumen-carrito"></div>
         <div style="display:flex; gap:.45rem; flex-wrap:wrap; margin-top:.7rem">
-          <button class="btn primario" id="btn-liquidar">Liquidar impuestos</button>
-          <button class="btn" id="btn-cotizar">Cotizar envío</button>
-          <button class="btn" id="btn-pagos">Medios de pago</button>
-          <button class="btn" id="btn-vaciar">Vaciar</button>
+          <button class="btn primario" id="btn-liquidar" data-i18n="btn.liquidar">Liquidar impuestos</button>
+          <button class="btn" id="btn-cotizar" data-i18n="btn.cotizar">Cotizar envío</button>
+          <button class="btn" id="btn-pagos" data-i18n="btn.pagos">Medios de pago</button>
+          <button class="btn" id="btn-vaciar" data-i18n="btn.vaciar">Vaciar</button>
         </div>
       </div>
     </section>
 
     <section class="tarjeta">
       <header>
-        <h2>Superficie WebMCP</h2>
+        <h2 data-i18n="h.superficie">Superficie WebMCP</h2>
         <span class="sub" id="sub-superficie">—</span>
       </header>
       <div class="cuerpo">
@@ -328,9 +376,9 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
     </section>
 
     <section class="tarjeta">
-      <header><h2>Bitácora</h2><span class="sub">llamadas y cambios de superficie</span></header>
+      <header><h2 data-i18n="h.bitacora">Bitácora</h2><span class="sub" data-i18n="h.bitacoraSub">llamadas y cambios de superficie</span></header>
       <div class="cuerpo">
-        <ul class="bitacora" id="bitacora"><li><div class="cab">arranque<span class="hora"></span></div><div class="det">esperando actividad</div></li></ul>
+        <ul class="bitacora" id="bitacora"><li><div class="cab"><span data-i18n="log.arranque">arranque</span><span class="hora"></span></div><div class="det" data-i18n="log.esperando">esperando actividad</div></li></ul>
       </div>
     </section>
 
@@ -339,25 +387,25 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
 </div>
 
 <footer class="pie">
-  <p><strong>Tendero</strong> — vitrina de demostración para el WebMCP Challenge. Precios,
+  <p data-i18n-html="pie.p1"><strong>Tendero</strong> — vitrina de demostración para el WebMCP Challenge. Precios,
   tarifas de transportadora y datos del comercio son ficticios; las reglas tributarias, los
   topes de recaudo, el calendario de festivos y el dígito de verificación del NIT son reales.
   Código abierto bajo licencia MIT.</p>
-  <p>Las ocho herramientas se resuelven <strong>dentro de la página</strong>, contra
-  <code>dominio.js</code>: sin backend, sin red y sin build. El servidor FastAPI del
-  repositorio queda como implementación de referencia y como banco de pruebas — sus 363
-  pruebas son las que fijan cada cifra que ves acá.</p>
+  <p data-i18n-html="pie.p2">Las <span id="cuenta-pie"></span> herramientas se resuelven <strong>dentro de la página</strong>, contra
+  <code>dominio.js</code>: sin backend, sin red y sin build. La implementación en Python
+  del repositorio queda como especificación de referencia, y <code>tests/parity/</code>
+  fija cada cifra que ves acá contra ella.</p>
 </footer>
 
 <script type="module">
 "use strict";
 
 /* ===================================================================== *
- *  Tendero — vitrina + ocho herramientas WebMCP
+ *  Tendero — vitrina + superficie WebMCP dinámica
  *
  *  La página hace tres cosas a la vez:
  *   1. es una tienda que una persona puede usar sin agente ninguno;
- *   2. registra ocho herramientas en document.modelContext;
+ *   2. registra sus herramientas en document.modelContext;
  *   3. cambia ese conjunto de herramientas según el estado del carrito,
  *      y se entera del cambio escuchando el evento "toolchange" — no su
  *      propia contabilidad, sino la verdad del navegador.
@@ -365,7 +413,7 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
  *  Toda herramienta pinta su resultado en el DOM. Si un agente llama algo
  *  y la pantalla no cambia, para el humano que mira no pasó nada.
  *
- *  SIN BACKEND. Las ocho herramientas no llaman a ningún servidor: resuelven
+ *  SIN BACKEND. Las herramientas no llaman a ningún servidor: resuelven
  *  contra `dominio.js`, que es el port a JavaScript del dominio colombiano
  *  probado en Python. Eso importa por tres razones:
  *
@@ -375,14 +423,14 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
  *     expone sus propias capacidades. Una página que reenvía cada `execute()`
  *     a un endpoint no está exponiendo nada suyo, está proxyeando.
  *
- *  El backend FastAPI del repositorio sigue existiendo como implementación
- *  de referencia y como suite de pruebas: cada cifra que sale de `dominio.js`
- *  se verifica byte a byte contra la que produce el Python.
+ *  La implementación en Python del repositorio existe como especificación
+ *  de referencia: cada cifra que sale de `dominio.js` se verifica en
+ *  `tests/parity/` contra la que produce el Python, byte a byte.
  * ===================================================================== */
 
 // El dominio, cargado como módulo. Publicada de forma estática la vitrina y el
-// módulo son hermanos, así que basta la ruta relativa; servida por el FastAPI
-// del repositorio la página vive en «/» y el módulo bajo «/static/», de ahí el
+// módulo son hermanos, así que basta la ruta relativa; servida desde otra raíz
+// la página puede vivir en «/» y el módulo bajo «/static/», de ahí el
 // segundo intento. No hay tercera ruta: si las dos fallan, no hay tienda.
 const D = await import("./dominio.js").catch(() => import("/static/dominio.js"));
 
@@ -393,6 +441,8 @@ const estado = {
   carrito: new Map(),      // sku -> cantidad
   destino: null,           // objeto ciudad ya resuelto
   categoria: null,
+  pedido: null,            // pedido preparado por el agente, esperando el clic humano (o null)
+  numeroPedidos: 0,        // contador del sello de los pedidos aprobados
 };
 
 const $ = (id) => document.getElementById(id);
@@ -400,6 +450,156 @@ const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const items = () => [...estado.carrito].map(([sku, cantidad]) => ({ sku, cantidad }));
+
+/* --------------------------------------------------------------------- *
+ *  Idioma del cromo — ?lang=en
+ *
+ *  Traduce SOLO la página: titular, encabezados de panel, rótulos, botones
+ *  y bitácora. NO toca el producto — nombres de referencia, precios,
+ *  nombres y descripciones de herramientas, mensajes de error —, porque eso
+ *  es lo que lee el agente y lo que dice la ley colombiana. Sin ?lang=en el
+ *  diccionario ni se consulta: el camino en español queda idéntico.
+ * --------------------------------------------------------------------- */
+
+const _paramLang = new URLSearchParams(location.search).get("lang");
+const idioma = _paramLang === "en" ? "en"
+  : _paramLang === "es" ? "es"
+  : ((navigator.language || "").toLowerCase().startsWith("es") ? "es" : "en");
+
+const EN = {
+  "hero.rotulo": "The thesis",
+
+  "wm.detectando": "detecting WebMCP…",
+  "wm.activo": "WebMCP live · deregistration via ",
+  "wm.ausente": "no document.modelContext",
+
+  "sinwm.titulo": "This browser does not expose <code>document.modelContext</code>.",
+  "sinwm.antes": "The store still works: you can search, build the cart, quote shipping, settle VAT, check the withdrawal window and see the payment rails with the page's own controls. The only thing that does not happen is registering the",
+  "sinwm.despues": "tools for an agent. Open it in a WebMCP browser (ChatGPT Atlas, or Chrome with the WebMCP flag) to see the surface grow.",
+
+  "demo.titulo": "How to try it with an agent.",
+  "demo.antes": "Ask for something a US-shaped tool catalogue cannot answer:",
+  "demo.medio": "You will watch the surface grow from",
+  "demo.a": "to",
+  "demo.despues": "tools, and every result paint itself on this same page.",
+
+  "h.catalogo": "Catalogue",
+  "h.envio": "Shipping",
+  "h.impuestos": "Taxes",
+  "h.pagos": "Payment rails",
+  "h.retracto": "Right of withdrawal",
+  "h.documento": "DIAN identity",
+  "h.pedido": "Order confirmation",
+  "h.carrito": "Cart",
+  "h.superficie": "WebMCP surface",
+  "h.bitacora": "Activity log",
+  "h.bitacoraSub": "tool calls and surface changes",
+
+  "ph.buscar": "Search: café, leche, aseo, arepa…",
+  "btn.buscar": "Search",
+  "btn.demo": "Sample basket",
+  "btn.retracto": "Compute the window",
+  "btn.doc": "Validate with DIAN",
+  "btn.liquidar": "Settle taxes",
+  "btn.cotizar": "Quote shipping",
+  "btn.pagos": "Payment rails",
+  "btn.vaciar": "Empty",
+
+  "lbl.fechaEntrega": "Delivery date",
+  "lbl.modalidad": "Sales channel",
+  "lbl.tipoDoc": "Type",
+  "lbl.numDoc": "Number",
+  "lbl.destino": "Order destination",
+
+  "hueco.envio": "Pick a destination to quote freight and find out whether cash on delivery reaches it.",
+  "hueco.iva": "Put something in the cart to settle VAT line by line.",
+  "hueco.pagos": "With a cart and a destination, the five Colombian rails get evaluated.",
+  "hueco.retracto": "Art. 47 of Law 1480 of 2011: five business days, against the real calendar.",
+  "hueco.documento": "Without a valid document type — and, for a NIT, the correct check digit — the tax authority rejects the whole invoice.",
+  "hueco.pedido": "No order has been prepared yet. When the agent calls <code>confirmar_pedido</code> (with the cart and the destination set), the order appears here line by line, with its freight, its payment ceiling and its withdrawal window — and with a button: the agent prepares it, a person decides whether it becomes a sale.",
+
+  "cat.referencias": "items",
+  "cat.preciosPara": "priced for",
+  "cat.agregar": "Add",
+  "cat.sinResultados": "No matches for «{q}».",
+
+  "carrito.vacioLargo": "Nothing in the cart yet.",
+  "carrito.vacio": "empty",
+  "carrito.sub": "{r} items · {u} units",
+  "destino.elegir": "— pick a municipality —",
+  "fichas.todo": "all",
+
+  "origen.agente": "🤖 called by the agent",
+  "origen.humano": "page",
+
+  "nivel.rotulo": "rung",
+  "nivel.0": "empty cart",
+  "nivel.1": "cart with products",
+  "nivel.2": "cart + destination",
+  "sup.registradas": "{n} of {total} registered",
+  "sup.sinWebmcp": "0 of {total} · browser without WebMCP",
+  "sup.apareceCuando": "appears once ",
+  "sup.cond0": "there is something in the cart",
+  "sup.cond1": "there is something in the cart",
+  "sup.cond2": "the destination is set",
+
+  "porque.buscar_productos": "the catalogue can always be read",
+  "porque.validar_documento_dian": "no valid identity, no invoice — cart or no cart",
+  "porque.agregar_al_carrito": "the gateway: with no cart there is nothing to quote, settle or pay",
+  "porque.quitar_del_carrito": "undoing is always available, cart or no cart",
+  "porque.calcular_total_con_iva": "there is a cart to settle",
+  "porque.consultar_derecho_retracto": "the window depends on what is in the cart",
+  "porque.cotizar_envio": "there is a parcel to ship",
+  "porque.metodos_de_pago": "there is an order to run the rails against",
+  "porque.confirmar_pedido": "cart and destination are set, so the whole order can be assembled",
+
+  "explica.0": "With an empty cart it makes sense to browse the catalogue, validate an identity and build or undo the cart: the other four tools would have nothing to operate on.",
+  "explica.1": "With products in the cart, the four tools that talk about THIS order appear: taxes, withdrawal, freight and payment. The payment rails depend on the municipality: with no destination set, the tool asks for one.",
+  "explica.2": "With a destination set, shelf prices and quotes are re-valued for that municipality, and metodos_de_pago re-registers itself with warnings when there is no road access or the destination is VAT-excluded.",
+
+  "log.arranque": "startup",
+  "log.esperando": "waiting for activity",
+  "log.destino": "destination",
+  "log.carrito": "cart",
+  "log.listo": "ready",
+  "log.toolchange": "toolchange",
+  "log.pedido": "order",
+  "log.pedido preparado": "order prepared",
+  "log.pedido aprobado": "order approved",
+  "log.página": "page",
+
+  "pie.p1": "<strong>Tendero</strong> — a demonstration storefront for the WebMCP Challenge. Prices, carrier rates and merchant details are fictional; the tax rules, the cash-collection ceilings, the public-holiday calendar and the NIT check digit are real. Open source under the MIT licence.",
+  "pie.p2": "The <span id=\"cuenta-pie\"></span> tools resolve <strong>inside the page</strong>, against <code>dominio.js</code>: no backend, no network, no build step. The repository's Python package is the reference specification, and <code>tests/parity/</code> pins every figure you see here against it.",
+};
+
+const t = (clave, es) => (idioma === "en" && EN[clave] != null) ? EN[clave] : es;
+const tf = (clave, es, valores) =>
+  t(clave, es).replace(/\{(\w+)\}/g, (_, k) => (valores[k] != null ? valores[k] : ""));
+
+function traducirCromo() {
+  const enlace = $("lang-toggle");
+  if (enlace) {
+    const p = new URLSearchParams(location.search);
+    if (idioma === "en") { p.delete("lang"); enlace.textContent = "Español"; enlace.hreflang = "es"; }
+    else { p.set("lang", "en"); enlace.textContent = "English"; enlace.hreflang = "en"; }
+    const cola = p.toString();
+    enlace.href = location.pathname + (cola ? "?" + cola : "");
+  }
+  if (idioma !== "en") return;               // el español es el original: no se toca
+  document.body.classList.add("en");
+  for (const el of document.querySelectorAll("[data-i18n]")) {
+    const v = EN[el.dataset.i18n];
+    if (v != null) el.textContent = v;
+  }
+  for (const el of document.querySelectorAll("[data-i18n-html]")) {
+    const v = EN[el.dataset.i18nHtml];
+    if (v != null) el.innerHTML = v;
+  }
+  for (const el of document.querySelectorAll("[data-i18n-ph]")) {
+    const v = EN[el.dataset.i18nPh];
+    if (v != null) el.placeholder = v;
+  }
+}
 
 /* --------------------------------------------------------------------- *
  *  Bitácora y destellos: la parte visible de que algo pasó
@@ -411,7 +611,9 @@ function anotar(clase, titulo, detalle) {
   const li = document.createElement("li");
   li.className = clase;
   const hora = new Date().toLocaleTimeString("es-CO", { hour12: false });
-  li.innerHTML = `<div class="cab">${esc(titulo)}<span class="hora">${hora}</span></div>` +
+  // El rotulo es cromo; el detalle es dato del dominio y se queda como esta.
+  const rotulo = (idioma === "en" && EN["log." + titulo] != null) ? EN["log." + titulo] : titulo;
+  li.innerHTML = `<div class="cab">${esc(rotulo)}<span class="hora">${hora}</span></div>` +
                  `<div class="det">${esc(detalle)}</div>`;
   ul.prepend(li);
   while (ul.children.length > 40) ul.lastChild.remove();
@@ -424,7 +626,9 @@ function destacar(idPanel, idOrigen, origen) {
   panel.classList.add("destello");
   const marca = $(idOrigen);
   marca.className = "origen " + (origen === "agente" ? "agente" : "humano");
-  marca.textContent = origen === "agente" ? "🤖 llamado por el agente" : "página";
+  marca.textContent = origen === "agente"
+    ? t("origen.agente", "🤖 llamado por el agente")
+    : t("origen.humano", "página");
   if (origen === "agente") panel.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
@@ -445,7 +649,7 @@ function pintarCatalogo(datos, origen) {
   datos.productos.forEach((p) => estado.indice.set(p.sku, p));
   const rejilla = $("rejilla");
   if (!datos.productos.length) {
-    rejilla.innerHTML = `<p class="hueco">Sin resultados para «${esc(datos.consulta)}».</p>`;
+    rejilla.innerHTML = `<p class="hueco">${esc(tf("cat.sinResultados", "Sin resultados para «{q}».", { q: datos.consulta }))}</p>`;
   } else {
     rejilla.innerHTML = datos.productos.map((p) => `
       <article class="producto">
@@ -455,13 +659,13 @@ function pintarCatalogo(datos, origen) {
         <div><span class="etq ${CLASE_REGIMEN[p.regimen]}">${esc(NOMBRE_REGIMEN[p.regimen])}</span></div>
         <p class="fund">${esc(p.fundamento)}</p>
         <footer>
-          <button class="btn mini primario" data-sku="${esc(p.sku)}">Agregar</button>
+          <button class="btn mini primario" data-sku="${esc(p.sku)}">${esc(t("cat.agregar", "Agregar"))}</button>
           <span class="fund">${esc(p.sku)}</span>
         </footer>
       </article>`).join("");
   }
-  $("sub-catalogo").textContent = datos.total + " referencias" +
-    (datos.destino ? " · precios para " + datos.destino.etiqueta : "");
+  $("sub-catalogo").textContent = datos.total + " " + t("cat.referencias", "referencias") +
+    (datos.destino ? " · " + t("cat.preciosPara", "precios para") + " " + datos.destino.etiqueta : "");
   $("nota-catalogo").textContent = datos.nota;
   destacar("panel-catalogo", "origen-catalogo", origen);
 }
@@ -578,11 +782,65 @@ function pintarRetracto(datos, origen) {
 function pintarDocumento(datos, origen) {
   $("cuerpo-documento").innerHTML = datos.valido
     ? `<p class="nota" style="margin-top:.7rem"><strong>${esc(datos.formateado)}</strong> —
-        ${esc(datos.nombre_tipo)}, código DIAN <strong>${esc(datos.codigo_dian)}</strong>.
-        ${datos.es_persona_juridica ? "Persona jurídica: la factura va a nombre de la razón social." : "Persona natural."}</p>
-       <p class="fund">${esc(datos.mensaje)}</p>`
+         ${esc(datos.nombre_tipo)}, código DIAN <strong>${esc(datos.codigo_dian)}</strong>.
+         ${datos.es_persona_juridica ? "Persona jurídica: la factura va a nombre de la razón social." : "Persona natural."}</p>
+        <p class="fund">${esc(datos.mensaje)}</p>`
     : `<p class="nota mala" style="margin-top:.7rem">${esc(datos.mensaje)}</p>`;
   destacar("panel-documento", "origen-documento", origen);
+}
+
+function pintarPedido(pedido, origen) {
+  const lineas = pedido.lineas.map((l) => `
+    <tr>
+      <td>${esc(l.descripcion)}<div class="fund">${esc(l.fundamento)}</div></td>
+      <td class="num">${l.cantidad}</td>
+      <td><span class="etq ${CLASE_REGIMEN[l.regimen_aplicado] || "excluido"}">${esc(NOMBRE_REGIMEN[l.regimen_aplicado] || l.regimen_aplicado)}</span></td>
+      <td class="num">${esc(l.total.texto)}</td>
+    </tr>`).join("");
+  const detalle = `
+    <table><thead><tr><th>Línea</th><th class="num">Cant.</th><th>Tratamiento</th><th class="num">Total</th></tr></thead>
+      <tbody>${lineas}</tbody></table>
+    <div class="total-fila"><span>Mercancía</span><span>${esc(pedido.mercancia.texto)}</span></div>
+    <div class="total-fila"><span>Flete · ${esc(pedido.flete.transportadora || "entrega local")}
+      ${pedido.flete.dias_habiles_minimo != null ? "(" + pedido.flete.dias_habiles_minimo + "–" + pedido.flete.dias_habiles_maximo + " días hábiles)" : ""}</span>
+      <span>${esc(pedido.flete.monto.texto)}</span></div>
+    <div class="total-fila fuerte"><span>Total del pedido</span><span>${esc(pedido.total.texto)}</span></div>
+    <p class="nota">Pago: <strong>${esc(pedido.metodo_pago.nombre)}</strong> · el cliente paga ${esc(pedido.metodo_pago.total_cliente.texto)}${
+      pedido.tope_metodo ? " · tope del riel " + esc(pedido.tope_metodo.valor.texto) + " (" + esc(pedido.tope_metodo.reglamento) + ")" : ""}.</p>
+    <p class="nota">Documento del comprador: <strong>${esc(pedido.documento.formateado)}</strong> —
+      ${esc(pedido.documento.nombre_tipo)}, código DIAN ${esc(pedido.documento.codigo_dian)}${
+      pedido.documento.es_persona_juridica ? " · persona jurídica" : ""}.</p>
+    <p class="nota">Derecho de retracto: ${pedido.retracto.aplica
+      ? `el cliente puede devolverlo hasta el <strong>${esc(pedido.retracto.vence)}</strong> (entrega estimada ${esc(pedido.retracto.fecha_entrega)}, ${pedido.retracto.dias_habiles} días hábiles)`
+      : "no aplica — " + esc(pedido.retracto.motivo)}.</p>
+    ${pedido.notas ? `<p class="fund">Notas del cliente: ${esc(pedido.notas)}</p>` : ""}`;
+  const cuerpo = $("cuerpo-pedido");
+  if (pedido.aprobado_por_humano) {
+    cuerpo.innerHTML = `
+      <div class="pedido aprobado">
+        <div class="fila-sellos"><span class="sello doble">🤖 preparado por el agente · ✋ aprobado por vos</span></div>
+        <div class="timbre">PEDIDO ${esc(pedido.sello.numero)}<br>aprobado el ${esc(pedido.sello.aprobado_a_local)}</div>
+        ${detalle}
+        <p class="nota">Venta demostrativa: no se cobró dinero real ni se envió nada. El sello marca el
+          momento exacto en que la persona aprobó el pedido preparado por el agente.</p>
+      </div>`;
+  } else {
+    cuerpo.innerHTML = `
+      <div class="pedido preparado">
+        <div class="fila-sellos">
+          <span class="sello agente">🤖 preparado por el agente</span>
+          <span class="sello espera">⏳ esperando aprobación humana</span>
+        </div>
+        <p class="nota ojo"><strong>Nada quedó comprometido.</strong> El agente preparó este pedido pero no
+          lo convirtió en venta: no se cobró dinero, no se despachó nada y todavía no existe la venta.
+          La responsabilidad de la venta es de la persona, no del agente.</p>
+        ${detalle}
+        <button class="btn primario grande" id="btn-confirmar-pedido">Confirmar pedido</button>
+        <p class="fund">Este clic es una acción humana, no una herramienta: aprueba el pedido, le pone
+          sello y lo convierte en la venta final.</p>
+      </div>`;
+  }
+  destacar("panel-pedido", "origen-pedido", origen);
 }
 
 /* --------------------------------------------------------------------- *
@@ -730,10 +988,128 @@ const acciones = {
       unidades: items().reduce((suma, l) => suma + l.cantidad, 0),
     };
   },
+
+  async confirmar_pedido(args, origen) {
+    // 1. Sobre qué operar: sin carrito no hay pedido, y sin destino no hay flete,
+    //    ni riel de pago ni plazo que calcular. La regla es la misma de metodos_de_pago.
+    if (!items().length) {
+      throw new Error("el carrito está vacío: no hay nada que confirmar; agregá referencias con " +
+        "agregar_al_carrito y fijá el destino con cotizar_envio antes de preparar el pedido");
+    }
+    const destino = (args.destino_dane != null && String(args.destino_dane).trim() !== "")
+      ? String(args.destino_dane).trim()
+      : (estado.destino ? estado.destino.codigo_dane : null);
+    if (!destino) {
+      throw new Error("falta el destino: un pedido sin municipio no se puede ni cobrar ni despachar; " +
+        "fijalo con cotizar_envio o enviá destino_dane (código DANE de cinco dígitos)");
+    }
+
+    // 2. Documento del comprador, por el MISMO camino que validar_documento_dian:
+    //    el anexo técnico DIAN, incluido el dígito de verificación del NIT.
+    const doc = args.documento ?? {};
+    if (!doc.tipo || !doc.numero) {
+      throw new Error("falta el documento del comprador: enviá `documento` con `tipo` " +
+        "(CC, CE, NIT, PA, TI o PEP) y `numero`");
+    }
+    const identidad = D.validar_documento_dian({ tipo: doc.tipo, numero: doc.numero });
+    if (!identidad.valido) {
+      throw new Error("documento del comprador rechazado por la regla DIAN: " + identidad.mensaje +
+        " — pedile al cliente el dato correcto y volvé a validarlo con validar_documento_dian " +
+        "antes de reintentar; el pedido no se preparó");
+    }
+
+    // 3. Método de pago contra lo que metodos_de_pago dice disponible para ESE municipio.
+    const pagos = D.metodos_de_pago({ items: items(), destino });
+    fijarDestino(pagos.destino);
+    const metodo = String(args.metodo_pago ?? "").trim().toLowerCase();
+    const rieles = Object.values(D.MetodoPago);
+    if (!rieles.includes(metodo)) {
+      throw new Error("metodo de pago desconocido «" + args.metodo_pago + "»: los rieles que existen " +
+        "son " + rieles.join(", ") + " — usá metodos_de_pago para ver cuáles aplican en " +
+        pagos.destino.etiqueta);
+    }
+    const evaluacion = pagos.metodos.find((m) => m.metodo === metodo);
+    if (!evaluacion || !evaluacion.disponible) {
+      const motivos = evaluacion ? evaluacion.motivos.join(" · ") : "no fue evaluado para este destino";
+      throw new Error("el metodo de pago «" + (evaluacion ? evaluacion.nombre : metodo) + "» no está " +
+        "disponible para " + pagos.destino.etiqueta + ": " + motivos + " — consultá metodos_de_pago y " +
+        "elegí uno de los rieles disponibles; el pedido no se preparó");
+    }
+
+    // 4. Lo que el pedido lleva: líneas con su tratamiento, flete y plazo de retracto.
+    //    Todo por caminos que ya existen y ya están cubiertos por paridad.
+    const iva = D.calcular_total_con_iva({ items: items(), destino });
+    const envio = D.cotizar_envio({ destino, items: items() });
+    const hoyIso = new Date().toISOString().slice(0, 10);
+    let fechaEntrega;
+    let modalidad;
+    if (envio.despachable && envio.mejor) {
+      // Entrega estimada: el plazo máximo en días hábiles que garantiza la
+      // transportadora más barata que cubre el destino.
+      fechaEntrega = D.a_iso(D.sumar_dias_habiles(D.desde_iso(hoyIso), envio.mejor.dias_habiles_maximo));
+      modalidad = "domicilio";
+    } else {
+      fechaEntrega = hoyIso;
+      modalidad = "mostrador";
+    }
+    const retracto = D.consultar_derecho_retracto({ fecha_entrega: fechaEntrega, modalidad, items: items() });
+
+    // 5. El tope regulatorio del riel elegido, si el dominio define uno.
+    let topeMetodo = null;
+    if (metodo === D.MetodoPago.CONTRAENTREGA) {
+      topeMetodo = { valor: envio.tope_contraentrega,
+        reglamento: "tope de recaudo de la transportadora en " + pagos.destino.etiqueta };
+    } else if (metodo === D.MetodoPago.NEQUI) {
+      topeMetodo = { valor: pagos.parametros.tope_deposito_bajo_monto,
+        reglamento: "8 salarios mínimos por operación (Decreto 2555 de 2010)" };
+    }
+
+    // 6. Se PREPARA el pedido, no se compromete: nada de esto cobra ni despacha.
+    //    Si ya había un pedido preparado, este lo reemplaza en vez de apilar.
+    const pedido = {
+      estado: "esperando_aprobacion_humana",
+      comprometido: false,
+      preparado_por: "agente",
+      aprobado_por_humano: false,
+      sello: null,
+      comercio: (estado.contexto && estado.contexto.comercio.nombre) || "Surtitienda La Milagrosa S.A.S.",
+      documento: identidad,
+      destino: pagos.destino,
+      lineas: iva.lineas,
+      mercancia: pagos.desglose.mercancia,
+      impuestos: { base_gravable: iva.base_gravable, iva: iva.iva, inc: iva.inc },
+      flete: {
+        transportadora: envio.mejor ? envio.mejor.transportadora : null,
+        monto: pagos.desglose.flete,
+        dias_habiles_minimo: envio.mejor ? envio.mejor.dias_habiles_minimo : null,
+        dias_habiles_maximo: envio.mejor ? envio.mejor.dias_habiles_maximo : null,
+        despachable: envio.despachable,
+      },
+      total: pagos.desglose.total_pedido,
+      metodo_pago: evaluacion,
+      tope_metodo: topeMetodo,
+      retracto: {
+        aplica: retracto.aplica,
+        motivo: retracto.motivo,
+        fecha_entrega: retracto.fecha_entrega,
+        vence: retracto.vence,
+        dias_habiles: retracto.dias_habiles,
+      },
+      carrito: items(),
+      unidades: items().reduce((suma, l) => suma + l.cantidad, 0),
+      notas: typeof args.notas === "string" && args.notas.trim() ? args.notas.trim() : null,
+      preparado_el: new Date().toISOString(),
+    };
+    estado.pedido = pedido;
+    anotar("cambio", "pedido preparado", pedido.total.texto + " a " + pedido.destino.etiqueta +
+      " · esperando aprobación humana");
+    pintarPedido(pedido, origen);
+    return pedido;
+  },
 };
 
 /* --------------------------------------------------------------------- *
- *  Las ocho herramientas
+ *  Las herramientas
  *
  *  `nivel` es el escalón del carrito en el que la herramienta aparece.
  *  `descripcion(estado)` devuelve texto que puede cambiar con el destino:
@@ -751,6 +1127,7 @@ const HERRAMIENTAS = [
     porque: "el catálogo se puede consultar siempre",
     anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false, untrustedContentHint: true },
     descripcion: () =>
+      "[EN: Searches this Colombian corner-store catalogue and returns, for every hit, its Colombian VAT treatment and a shelf price already computed for the destination municipality.] " +
       "Busca referencias en el catálogo de esta tienda de barrio de Medellín. Para cada una devuelve su " +
       "régimen tributario colombiano — IVA 19 % (Art. 468 ET), IVA 5 % (Art. 468-1), EXENTO a tarifa cero " +
       "(Art. 477), EXCLUIDO sin línea de impuesto (Art. 424) o INC 8 % en vez de IVA para comida preparada " +
@@ -776,6 +1153,7 @@ const HERRAMIENTAS = [
     porque: "sin identidad válida no hay factura, con carrito o sin él",
     anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false, untrustedContentHint: false },
     descripcion: () =>
+      "[EN: Validates the buyer tax ID against the Colombian tax authority (DIAN) e-invoicing spec, including the NIT check digit, which it computes when the customer does not know it.] " +
       "Valida la identificación tributaria del comprador contra el anexo técnico de facturación electrónica de " +
       "la DIAN y devuelve el código de tipo que va en el documento: CC 13, CE 22, NIT 31, PA 41, TI 12, PEP 47. " +
       "Para un NIT verifica el dígito de verificación con la serie de primos oficial aplicada de derecha a " +
@@ -801,9 +1179,11 @@ const HERRAMIENTAS = [
     porque: "es la puerta: sin carrito no hay nada que cotizar, liquidar ni pagar",
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false, untrustedContentHint: false },
     descripcion: () =>
+      "[EN: Adds items to the page cart by free text or SKU, and is the gateway of the whole surface: the first item in the cart is what unlocks the tax, withdrawal, freight and payment tools.] " +
       "Agrega referencias al carrito de la página — la puerta de entrada de toda la superficie: con el carrito " +
       "vacío solo existen buscar_productos, validar_documento_dian y estas dos herramientas, y al entrar la " +
-      "primera referencia aparecen calcular_total_con_iva, consultar_derecho_retracto y cotizar_envio. Cada " +
+      "primera referencia aparecen calcular_total_con_iva, consultar_derecho_retracto, cotizar_envio y " +
+      "metodos_de_pago —los rieles piden el destino si la página no lo tiene fijado—. Cada " +
       "línea lleva `consulta` (texto libre tal como lo pidió el cliente: 'jabón', 'leche', resuelto con la " +
       "misma búsqueda de buscar_productos, que tolera tildes y mayúsculas) o el `sku` exacto, más su " +
       "`cantidad`. Si la consulta coincide con varias referencias, esta herramienta NO adivina: devuelve las " +
@@ -848,6 +1228,7 @@ const HERRAMIENTAS = [
     porque: "siempre se puede deshacer, con carrito o sin él",
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false, untrustedContentHint: false },
     descripcion: () =>
+      "[EN: Removes units, or a whole line, from the page cart; emptying the cart shrinks the tool surface back to its base rung.] " +
       "Quita unidades de una referencia del carrito de la página; si se omite `cantidad`, quita la línea " +
       "entera. Es la inversión exacta de agregar_al_carrito: ambas escriben el carrito de la página, que es el " +
       "estado que despierta el resto de la superficie — si el carrito queda vacío, la superficie vuelve al " +
@@ -875,6 +1256,7 @@ const HERRAMIENTAS = [
     porque: "hay carrito que liquidar",
     anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false, untrustedContentHint: false },
     descripcion: () =>
+      "[EN: Settles the cart line by line under the four Colombian VAT treatments, where zero-rated and excluded are different in law, plus the 8% consumption tax that replaces VAT on prepared food.] " +
       "Liquida el carrito de la página línea por línea, cada línea con su propio régimen. Colombia tiene cuatro " +
       "tratamientos y EXENTO no es lo mismo que EXCLUIDO: un bien exento (Art. 477 ET — carne, leche, huevos) " +
       "está gravado a tarifa cero, lleva línea de IVA al 0,00 % y el vendedor CONSERVA el derecho a impuestos " +
@@ -899,6 +1281,7 @@ const HERRAMIENTAS = [
     porque: "el plazo depende de lo que hay en el carrito",
     anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false, untrustedContentHint: false },
     descripcion: () =>
+      "[EN: Computes the statutory five-business-day right-of-withdrawal window against the real Colombian holiday calendar, and detects the cart contents that are excluded from it.] " +
       "Calcula la ventana del derecho de retracto del Art. 47 de la Ley 1480 de 2011: cinco DÍAS HÁBILES desde " +
       "la entrega, resueltos contra el calendario colombiano real — los 18 festivos del año, la Ley 51 de 1983 " +
       "que corre doce de ellos al lunes siguiente, y los cinco derivados de la Pascua. No cuentes días corridos: " +
@@ -926,6 +1309,7 @@ const HERRAMIENTAS = [
     porque: "hay bulto que despachar",
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false, untrustedContentHint: true },
     descripcion: () =>
+      "[EN: Quotes freight for the cart to a Colombian municipality across five carriers and says whether cash on delivery can physically reach it.] " +
       "Cotiza el despacho del carrito hacia un municipio colombiano con las cinco transportadoras del comercio y " +
       "dice si ese destino admite pago CONTRA ENTREGA. Llamala antes de prometer una forma de pago: Leticia, " +
       "Puerto Nariño, Mitú, Inírida, Puerto Carreño, San Andrés y Providencia no tienen carretera, la mercancía " +
@@ -949,10 +1333,11 @@ const HERRAMIENTAS = [
   {
     nombre: "metodos_de_pago",
     nivel: 2,
-    porque: "los rieles dependen del municipio ya fijado",
+    porque: "hay un pedido al que aplicar los rieles",
     anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false, untrustedContentHint: true },
     descripcion: () => {
-      let t =
+      let texto =
+        "[EN: Evaluates the five Colombian payment rails against this specific order and returns the unavailable ones too, each with the reason written out.] " +
         "Evalúa los cinco rieles de pago colombianos contra este pedido concreto — Nequi, PSE, transferencia " +
         "Bancolombia, tarjeta y contra entrega — y devuelve TAMBIÉN los que no aplican, con el motivo redactado, " +
         "para que puedas explicarle al cliente por qué no aparece uno. No son botones fijos: Nequi es un depósito " +
@@ -961,14 +1346,15 @@ const HERRAMIENTAS = [
         "y va contra un tope de recaudo. Devuelve además lo que le queda al comercio después de comisión, de la " +
         "retención en la fuente del 1,5 % sobre tarjetas y del 4x1000 (Art. 870 ET).";
       if (estado.destino && estado.destino.solo_aereo) {
-        t += " ATENCIÓN, destino actual " + estado.destino.etiqueta + ": no tiene vía terrestre, así que el " +
+        texto += " ATENCIÓN, destino actual " + estado.destino.etiqueta + ": no tiene vía terrestre, así que el " +
              "contra entrega NO existe allí y hay que cobrar por adelantado.";
       }
       if (estado.destino && estado.destino.regimen_iva_especial) {
-        t += " Ese destino además está excluido del IVA, de modo que el total ya viene sin impuesto.";
+        texto += " Ese destino además está excluido del IVA, de modo que el total ya viene sin impuesto.";
       }
-      return t;
-    },
+      return texto;
+    }
+,
     esquema: () => ({
       type: "object",
       properties: {
@@ -981,6 +1367,56 @@ const HERRAMIENTAS = [
     resumen: (d) => `Total ${d.desglose.total_pedido.texto} (mercancía ${d.desglose.mercancia.texto} + flete ${d.desglose.flete.texto}). ` +
       `Disponibles: ${d.metodos.filter((m) => m.disponible).map((m) => m.nombre).join(", ") || "ninguno"}. ` +
       `No disponibles: ${d.metodos.filter((m) => !m.disponible).map((m) => m.metodo + " (" + m.motivos[0] + ")").join("; ") || "ninguno"}.`,
+  },
+  {
+    // El noveno. Los otros ocho calculan; este produce algo — y deliberadamente NO lo
+    // cierra. El agente arma el pedido con todo lo que la ley exige y se detiene; la
+    // aprobación es un clic humano. Esa asimetría es el punto: el agente sabe el
+    // catálogo, el tratamiento de IVA, la cobertura de la transportadora y el plazo de
+    // retracto; la persona asume la venta.
+    nombre: "confirmar_pedido",
+    nivel: 2,
+    porque: "hay carrito y destino, así que ya se puede armar el pedido completo",
+    anotaciones: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false, untrustedContentHint: false },
+    descripcion: () => {
+      let texto =
+        "[EN: Assembles the complete order and leaves it PREPARED for a human click: it does not charge, does not ship and does not close the sale.] " +
+        "Arma el pedido completo y lo deja PREPARADO, esperando que una persona lo apruebe con un clic: " +
+        "esta herramienta NO cobra, NO despacha y NO cierra la venta. Valida antes de armar — documento del " +
+        "comprador contra la regla DIAN (incluido el dígito de verificación del NIT), método de pago contra la " +
+        "cobertura real del municipio, y carrito no vacío — y si algo falla devuelve el motivo con la regla que " +
+        "lo bloqueó, para que puedas corregirlo con el cliente. El pedido preparado incluye el desglose por " +
+        "tratamiento de IVA, el flete, el tope del riel de pago y la fecha exacta en que vence el retracto.";
+      if (estado.pedido) {
+        texto += " YA HAY un pedido preparado por " + estado.pedido.total.texto + "; llamarme de nuevo lo reemplaza.";
+      }
+      return texto;
+    },
+    esquema: () => ({
+      type: "object",
+      properties: {
+        documento: {
+          type: "object",
+          description: "Identidad del comprador. Sin documento válido la DIAN rechaza la factura electrónica.",
+          properties: {
+            tipo: { type: "string", enum: ["CC", "CE", "NIT", "PA", "TI", "PEP"] },
+            numero: { type: "string", description: "Sin puntos ni guiones. Para NIT, sin el dígito de verificación." },
+          },
+          required: ["tipo", "numero"],
+          additionalProperties: false,
+        },
+        metodo_pago: { type: "string", description: "Uno de los rieles que metodos_de_pago haya reportado como disponible para este destino." },
+        destino_dane: { type: "string", description: "Código DANE del municipio. Si se omite se usa el destino ya fijado en la página." },
+        notas: { type: "string", description: "Nota libre para el tendero." },
+      },
+      required: ["documento", "metodo_pago"],
+      additionalProperties: false,
+    }),
+    resumen: (d) =>
+      `Pedido PREPARADO por ${d.total.texto} a ${d.destino.etiqueta} — ${d.unidades} unidades, ` +
+      `pago por ${d.metodo_pago ? d.metodo_pago.nombre : "sin método"}. ` +
+      (d.retracto && d.retracto.aplica ? `Retracto hasta el ${d.retracto.vence}. ` : `Sin derecho de retracto: ${d.retracto ? d.retracto.motivo : "n/a"}. `) +
+      `NADA se ha cobrado ni despachado: falta que una persona pulse «Confirmar pedido» en la página.`,
   },
 ];
 
@@ -1098,22 +1534,44 @@ function pintarSuperficie() {
     return `<div class="herramienta ${on ? "activa" : "dormida"}">
       <div class="nom">${on ? "●" : "○"} ${esc(h.nombre)}
         ${anot.map((a) => `<span class="marca-anot">${esc(a)}</span>`).join("")}</div>
-      <div class="porque">${on ? esc(h.porque) : "aparece cuando " + esc(["hay algo en el carrito", "hay algo en el carrito", "el destino está fijado"][h.nivel] || "")}</div>
+      <div class="porque">${on
+        ? esc(t("porque." + h.nombre, h.porque))
+        : esc(t("sup.apareceCuando", "aparece cuando ") +
+              t("sup.cond" + h.nivel, ["hay algo en el carrito", "hay algo en el carrito", "el destino está fijado"][h.nivel] || ""))}</div>
     </div>`;
   }).join("");
 
   const esc3 = $("escalon").children;
   for (let i = 0; i < 3; i++) esc3[i].classList.toggle("on", i <= nivel);
-  const etiquetas = ["carrito vacío", "carrito con productos", "carrito + destino"];
-  $("pastilla-nivel").textContent = "nivel " + nivel + ": " + etiquetas[nivel];
+  const etiquetas = [
+    t("nivel.0", "carrito vacío"),
+    t("nivel.1", "carrito con productos"),
+    t("nivel.2", "carrito + destino"),
+  ];
+  $("pastilla-nivel").textContent = t("nivel.rotulo", "nivel") + " " + nivel + ": " + etiquetas[nivel];
   $("sub-superficie").textContent = mc
-    ? registradas.size + " de " + HERRAMIENTAS.length + " registradas"
-    : "0 de " + HERRAMIENTAS.length + " · navegador sin WebMCP";
+    ? tf("sup.registradas", "{n} de {total} registradas", { n: registradas.size, total: HERRAMIENTAS.length })
+    : tf("sup.sinWebmcp", "0 de {total} · navegador sin WebMCP", { total: HERRAMIENTAS.length });
   $("explica-nivel").textContent = [
-    "Con el carrito vacío tiene sentido consultar el catálogo, validar una identidad y armar o deshacer el carrito: las otras cuatro herramientas no tendrían sobre qué operar.",
-    "Con productos en el carrito aparecen las tres que hablan de ESTE pedido: impuestos, retracto y flete. Falta el destino para poder hablar de pagos.",
-    "Con destino fijado se habilita metodos_de_pago, y su descripción cambia si ese municipio no tiene carretera o está excluido del IVA.",
+    t("explica.0", "Con el carrito vacío tiene sentido consultar el catálogo, validar una identidad y armar o deshacer el carrito: las otras cuatro herramientas no tendrían sobre qué operar."),
+    t("explica.1", "Con productos en el carrito aparecen las cuatro que hablan de ESTE pedido: impuestos, retracto, flete y pagos. Los rieles de pago dependen del municipio: sin destino fijado, la herramienta pide que se envíe."),
+    t("explica.2", "Con destino fijado, los precios de góndola y las cotizaciones se re-valoran para ese municipio, y metodos_de_pago se re-registra con advertencias si no hay vía terrestre o el destino está excluido del IVA."),
   ][nivel];
+}
+
+// Las cifras de herramientas que enseña la página salen de HERRAMIENTAS, no de
+// un número escrito a mano: si mañana se agrega una herramienta, la página no
+// miente.
+function pintarCuentas() {
+  const total = HERRAMIENTAS.length;
+  const base = HERRAMIENTAS.filter((h) => h.nivel === 0).length;
+  document.querySelector('meta[name="description"]').content =
+    "Vitrina colombiana que registra " + total + " herramientas WebMCP: carrito, IVA por destino, " +
+    "flete, contra entrega, documento DIAN, derecho de retracto y rieles de pago.";
+  $("cuenta-aviso").textContent = total;
+  $("cuenta-pie").textContent = total;
+  $("cuenta-inicial").textContent = base;
+  $("cuenta-total").textContent = total;
 }
 
 /* --------------------------------------------------------------------- *
@@ -1156,8 +1614,8 @@ function fijarDestino(ciudad) {
 function pintarCarrito() {
   const ul = $("lineas");
   if (!estado.carrito.size) {
-    ul.innerHTML = '<li class="vacio">Todavía no hay nada en el carrito.</li>';
-    $("sub-carrito").textContent = "vacío";
+    ul.innerHTML = `<li class="vacio">${esc(t("carrito.vacioLargo", "Todavía no hay nada en el carrito."))}</li>`;
+    $("sub-carrito").textContent = t("carrito.vacio", "vacío");
     $("resumen-carrito").innerHTML = "";
     return;
   }
@@ -1175,7 +1633,7 @@ function pintarCarrito() {
       <span class="num">${p ? esc(p.precio_publico.texto) : ""}</span>
     </li>`;
   }).join("");
-  $("sub-carrito").textContent = estado.carrito.size + " referencias · " + unidades + " unidades";
+  $("sub-carrito").textContent = tf("carrito.sub", "{r} referencias · {u} unidades", { r: estado.carrito.size, u: unidades });
 }
 
 function agregar(sku, delta) {
@@ -1196,40 +1654,42 @@ function agregar(sku, delta) {
  * --------------------------------------------------------------------- */
 
 async function arrancar() {
+  traducirCromo();          // el cromo primero: las cuentas se pintan encima
+  pintarCuentas();
   // 1. estrategia de baja de herramientas, decidida una sola vez
   if (mc) {
     if (typeof mc.unregisterTool === "function") estrategiaBaja = "unregisterTool";
     else if (typeof mc.provideContext === "function") estrategiaBaja = "reemplazo";
     else estrategiaBaja = "manija";
     $("pastilla-webmcp").className = "pastilla viva";
-    $("texto-webmcp").textContent = "WebMCP activo · baja por " + estrategiaBaja;
+    $("texto-webmcp").textContent = t("wm.activo", "WebMCP activo · baja por ") + estrategiaBaja;
     // 2. la única fuente de verdad sobre la superficie es el propio navegador
     if (typeof mc.addEventListener === "function") {
       mc.addEventListener("toolchange", () => {
         const n = registradas.size;
         anotar("cambio", "toolchange", n + " de " + HERRAMIENTAS.length + " herramientas expuestas · nivel " + nivelActual());
-        $("sub-superficie").textContent = n + " de " + HERRAMIENTAS.length + " registradas";
+        $("sub-superficie").textContent = tf("sup.registradas", "{n} de {total} registradas", { n, total: HERRAMIENTAS.length });
       });
     }
   } else {
     $("pastilla-webmcp").className = "pastilla mala";
-    $("texto-webmcp").textContent = "sin document.modelContext";
+    $("texto-webmcp").textContent = t("wm.ausente", "sin document.modelContext");
     $("aviso-sin-webmcp").classList.remove("oculto");
   }
 
-  // 3. maestros: los mismos que servía GET /api/contexto, ya en memoria
+  // 3. maestros: los datos de referencia del dominio, ya en memoria
   const ctx = D.contexto();
   estado.contexto = ctx;
   $("nombre-comercio").textContent = ctx.comercio.nombre;
   $("datos-comercio").textContent = ctx.comercio.documento + " · " + ctx.comercio.direccion +
     " · " + ctx.comercio.ciudad + (ctx.comercio.responsable_iva ? " · responsable de IVA" : "");
-  $("destino").innerHTML = '<option value="">— elegir municipio —</option>' +
+  $("destino").innerHTML = `<option value="">${esc(t("destino.elegir", "— elegir municipio —"))}</option>` +
     ctx.ciudades.map((c) => `<option value="${esc(c.codigo_dane)}">${esc(c.etiqueta)}${c.solo_aereo ? " ✈︎ sin carretera" : ""}</option>`).join("");
   $("tipo-doc").innerHTML = ctx.tipos_documento.map((t) =>
     `<option value="${esc(t.tipo)}">${esc(t.tipo)} — ${esc(t.nombre)} (DIAN ${esc(t.codigo_dian)})</option>`).join("");
   $("modalidad").innerHTML = ctx.modalidades_venta.map((m) =>
     `<option value="${esc(m)}">${esc(m.replace(/_/g, " "))}</option>`).join("");
-  $("fichas").innerHTML = `<button class="ficha" data-cat="" aria-pressed="true">todo</button>` +
+  $("fichas").innerHTML = `<button class="ficha" data-cat="" aria-pressed="true">${esc(t("fichas.todo", "todo"))}</button>` +
     ctx.categorias.map((c) => `<button class="ficha" data-cat="${esc(c)}" aria-pressed="false">${esc(c.replace(/_/g, " "))}</button>`).join("");
   const hoy = new Date().toISOString().slice(0, 10);
   $("fecha-entrega").value = hoy;
@@ -1290,6 +1750,24 @@ document.addEventListener("click", async (ev) => {
       estado.carrito.clear(); pintarCarrito(); sincronizarSuperficie();
       anotar("cambio", "carrito", "vaciado");
       break;
+    case "btn-confirmar-pedido": {
+      // La única acción de esta página que NO es una herramienta. El agente preparó el
+      // pedido; la persona lo aprueba. El sello marca el instante exacto del clic humano,
+      // y es lo que convierte "preparado" en "venta" — nada se cobra ni se despacha antes.
+      const pedido = estado.pedido;
+      if (!pedido) { anotar("error", "pedido", "no hay pedido preparado que aprobar"); break; }
+      const ahora = new Date();
+      pedido.aprobado_por_humano = true;
+      pedido.sello = {
+        numero: "SLM-" + ahora.toISOString().slice(0, 10).replace(/-/g, "") + "-" +
+                String(Math.floor(Math.random() * 9000) + 1000),
+        aprobado_el: ahora.toISOString(),
+        aprobado_a_local: ahora.toLocaleString("es-CO", { timeZone: "America/Bogota", dateStyle: "long", timeStyle: "short" }),
+      };
+      pintarPedido(pedido, "humano");
+      anotar("cambio", "pedido aprobado", pedido.sello.numero + " · " + pedido.total.texto + " · clic humano");
+      break;
+    }
     case "btn-liquidar":
       $("cuerpo-iva").dataset.vivo = "si";
       await correr(() => acciones.calcular_total_con_iva({}, "humano"), "cuerpo-iva");
