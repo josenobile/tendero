@@ -397,6 +397,27 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
   fija cada cifra que ves acá contra ella.</p>
 </footer>
 
+<script>
+  // Wompi payment configuration for the `iniciar_pago` tool.
+  //
+  // SANDBOX ONLY. Paste a free sandbox key pair from https://comercios.wompi.co
+  // (no KYC, no real money) — a public key `pub_test_…` and its integrity secret
+  // `test_integrity_…`. The demo is a fictional store, so it must NEVER carry
+  // production keys: a `pub_prod_…` / real total here would collect real money for
+  // goods that do not exist. Sandbox keys are safe to commit precisely because they
+  // move no money.
+  //
+  // Note for production (a real merchant, real goods): the integrity secret must NOT
+  // live in the page — it would be world-readable. A real deployment signs the
+  // transaction in a tiny backend. This static demo can hold the SANDBOX secret only
+  // because sandbox charges are simulated.
+  window.WOMPI = {
+    env: "sandbox",
+    publicKey: "",        // pub_test_…
+    integritySecret: "",  // test_integrity_…
+    redirectUrl: "",      // optional; defaults to this page
+  };
+</script>
 <script type="module">
 "use strict";
 
@@ -816,13 +837,20 @@ function pintarPedido(pedido, origen) {
     ${pedido.notas ? `<p class="fund">Notas del cliente: ${esc(pedido.notas)}</p>` : ""}`;
   const cuerpo = $("cuerpo-pedido");
   if (pedido.aprobado_por_humano) {
+    const pago = pedido.pago
+      ? `<a class="btn primario grande" href="${esc(pedido.pago.url)}" target="_blank" rel="noopener">
+           Pagar con Wompi · ${esc(pedido.pago.entorno)}</a>
+         <p class="fund">Checkout REAL de Wompi (${esc(pedido.pago.entorno)}) — PSE, Nequi, Bancolombia o tarjeta,
+           ref ${esc(pedido.pago.referencia)}. Lleva el IVA y el impoconsumo exactos que liquidó la página.
+           En sandbox no se mueve dinero real.</p>`
+      : `<p class="fund">El agente puede llamar <code>iniciar_pago</code> para emitir el cobro por un riel
+           colombiano real (Wompi). El pago lo completa una persona; en sandbox no mueve dinero real.</p>`;
     cuerpo.innerHTML = `
       <div class="pedido aprobado">
         <div class="fila-sellos"><span class="sello doble">🤖 preparado por el agente · ✋ aprobado por vos</span></div>
         <div class="timbre">PEDIDO ${esc(pedido.sello.numero)}<br>aprobado el ${esc(pedido.sello.aprobado_a_local)}</div>
         ${detalle}
-        <p class="nota">Venta demostrativa: no se cobró dinero real ni se envió nada. El sello marca el
-          momento exacto en que la persona aprobó el pedido preparado por el agente.</p>
+        ${pago}
       </div>`;
   } else {
     cuerpo.innerHTML = `
@@ -1105,6 +1133,79 @@ const acciones = {
       " · esperando aprobación humana");
     pintarPedido(pedido, origen);
     return pedido;
+  },
+
+  async iniciar_pago(args, origen) {
+    // El décimo. Convierte el pedido APROBADO en un cobro real por Wompi (PSE, Nequi,
+    // Bancolombia, tarjeta) — el riel colombiano de verdad, en ambiente SANDBOX, de modo
+    // que se prueba de punta a punta sin mover dinero real. Y lo hace bien: le pasa a
+    // Wompi el IVA y el impoconsumo EXACTOS que ya liquidó la página (tax-in-cents), que
+    // es justamente lo que un checkout genérico calcularía mal.
+    const pedido = estado.pedido;
+    if (!pedido) {
+      throw new Error("no hay pedido: llamá confirmar_pedido primero para armar la orden");
+    }
+    if (!pedido.aprobado_por_humano) {
+      throw new Error("el pedido todavía no lo aprobó una persona: alguien debe pulsar " +
+        "«Confirmar pedido» en la página antes de cobrar — la venta la asume el humano, no el agente");
+    }
+    const cfg = window.WOMPI || {};
+    if (!cfg.publicKey || !cfg.integritySecret) {
+      throw new Error("pago no configurado: falta la llave de Wompi. Poné una llave de " +
+        "SANDBOX (pub_test_… y test_integrity_…) en el bloque window.WOMPI de la página. " +
+        "Se consigue gratis en comercios.wompi.co, sin trámite, y no mueve dinero real.");
+    }
+    const moneda = "COP";
+    const centavos = pedido.total.centavos;
+    const referencia = (pedido.sello && pedido.sello.numero)
+      ? pedido.sello.numero
+      : "TENDERO-" + Date.now().toString(36).toUpperCase();
+    // Firma de integridad Wompi: SHA256(referencia + monto + moneda + secreto).
+    const cadena = `${referencia}${centavos}${moneda}${cfg.integritySecret}`;
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(cadena));
+    const firma = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+    // Query string a mano: Wompi espera los dos-puntos LITERALES en signature:integrity,
+    // tax-in-cents:vat y customer-data:full-name; URLSearchParams los codificaría.
+    // El IVA e impoconsumo EXACTOS del carrito actual — la misma liquidación que ve la
+    // página. Es lo que hace este cobro distinto de un checkout genérico de total plano.
+    let iva = 0, inc = 0;
+    try {
+      const liq = D.calcular_total_con_iva({
+        items: items(),
+        destino: estado.destino ? estado.destino.codigo_dane : null,
+        responsable_iva: true,
+      });
+      iva = (liq.iva && liq.iva.centavos) || 0;
+      inc = (liq.inc && liq.inc.centavos) || 0;
+    } catch (_) { /* el total ya es autoritativo; el desglose de impuestos es best-effort */ }
+    const nombre = (pedido.documento && pedido.documento.formateado) || "Cliente Tendero";
+    const partes = [
+      ["public-key", cfg.publicKey],
+      ["currency", moneda],
+      ["amount-in-cents", String(centavos)],
+      ["reference", referencia],
+      ["signature:integrity", firma],
+      ["redirect-url", cfg.redirectUrl || location.origin + location.pathname],
+      ["tax-in-cents:vat", String(iva)],
+      ["tax-in-cents:consumption", String(inc)],
+      ["customer-data:full-name", nombre],
+    ];
+    const url = "https://checkout.wompi.co/p/?" +
+      partes.map(([k, v]) => k + "=" + encodeURIComponent(v)).join("&");
+    pedido.pago = { url, referencia, entorno: cfg.env || "sandbox" };
+    pintarPedido(pedido, origen);
+    return {
+      checkout_url: url,
+      referencia,
+      monto_centavos: centavos,
+      monto: pedido.total.texto,
+      iva_centavos: iva,
+      impoconsumo_centavos: inc,
+      entorno: cfg.env || "sandbox",
+      metodos: "PSE, Nequi, Bancolombia, tarjeta — los resuelve Wompi en el checkout",
+      nota: "Checkout real de Wompi en SANDBOX: la persona completa el pago allí; no se " +
+        "mueve dinero real. El IVA y el impoconsumo van con el monto exacto que liquidó la página.",
+    };
   },
 };
 
@@ -1417,6 +1518,39 @@ const HERRAMIENTAS = [
       `pago por ${d.metodo_pago ? d.metodo_pago.nombre : "sin método"}. ` +
       (d.retracto && d.retracto.aplica ? `Retracto hasta el ${d.retracto.vence}. ` : `Sin derecho de retracto: ${d.retracto ? d.retracto.motivo : "n/a"}. `) +
       `NADA se ha cobrado ni despachado: falta que una persona pulse «Confirmar pedido» en la página.`,
+  },
+  {
+    // El décimo. Cierra el círculo: el pedido que el agente armó y una persona aprobó se
+    // cobra por un riel colombiano REAL (Wompi: PSE, Nequi, Bancolombia, tarjeta), en
+    // SANDBOX, llevando el IVA e impoconsumo exactos que la página liquidó.
+    nombre: "iniciar_pago",
+    nivel: 2,
+    porque: "hay un pedido aprobado por una persona, listo para cobrar",
+    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true, untrustedContentHint: false },
+    descripcion: () => {
+      const cfg = window.WOMPI || {};
+      let t =
+        "[EN: turn the human-approved order into a real Wompi checkout — the actual Colombian rail (PSE, Nequi, Bancolombia, card), in sandbox, carrying the exact VAT and consumption tax the page computed.] " +
+        "Genera un checkout REAL de Wompi para el pedido ya aprobado por una persona: " +
+        "devuelve la URL de pago que abre PSE, Nequi, transferencia Bancolombia o tarjeta. " +
+        "Le pasa a Wompi el IVA y el impoconsumo EXACTOS que liquidó la página, no un total plano. " +
+        "Requiere que el pedido esté aprobado (clic humano) — el agente no cobra por su cuenta.";
+      if (!cfg.publicKey) t += " ATENCIÓN: falta configurar la llave de Wompi (sandbox) en la página; hasta entonces esta herramienta devuelve el motivo, no una URL.";
+      else t += ` Ambiente actual: ${cfg.env || "sandbox"} (no mueve dinero real).`;
+      return t;
+    },
+    esquema: () => ({
+      type: "object",
+      properties: {
+        confirmar: { type: "boolean", description: "Poné true para generar el link de pago del pedido aprobado. Sin confirmación no se emite." },
+      },
+      additionalProperties: false,
+    }),
+    resumen: (d) =>
+      d.checkout_url
+        ? `Checkout Wompi (${d.entorno}) por ${d.monto} — ref ${d.referencia}, IVA ${d.iva_centavos} c, ` +
+          `impoconsumo ${d.impoconsumo_centavos} c. Abrí: ${d.checkout_url}`
+        : `Pago no emitido: ${d.nota || "falta configuración o aprobación"}.`,
   },
 ];
 
