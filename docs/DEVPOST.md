@@ -132,6 +132,22 @@ liquidations, a volumetric freight quote and a business-day window per order.
   a job that loads the real page with a mock `modelContext` and asserts that an agent can
   grow the tool surface by itself.
 
+## Potential impact
+
+Two people sit on either side of this gap. A **corner-store owner** in Medellín already
+sells over WhatsApp and has to get every invoice past the DIAN — a wrong document type or
+NIT check digit bounces the whole electronic document, and the tax owed shifts with the
+buyer's department. A **shopper** whose assistant "checks out" can have it silently choose
+a payment rail that cannot physically reach their town. The commerce tools that ship in
+every WebMCP demo make both cases *worse, confidently*, because they encode a checkout the
+buyer does not have.
+
+Colombia is the instance, not the point. The *shape* — the last mile of commerce is local
+law the agent cannot infer, and the page is the only party that knows it — repeats in
+Brazil (NF-e, CPF/CNPJ), Mexico (CFDI, RFC), India (GSTIN, UPI-first). Swap the rule
+module and the same page registers the tools that jurisdiction needs. Adoption is one
+static file and a `<script>`: no backend, nothing to keep alive, MIT-licensed.
+
 ## Verified
 
 Probed against the **deployed** page with a mock `document.modelContext`, driving it exactly

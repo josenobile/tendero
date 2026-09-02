@@ -58,6 +58,30 @@ treatments at once — plantain is *excluido*, milk is *exento*, coffee is 5 %, 
 19 %, and the set lunch pays consumption tax instead of VAT. A seven-line cart already
 forces five different liquidations.
 
+## Who this is for
+
+Two people, one gap between them:
+
+- **The shopkeeper** in Manrique who already sells over WhatsApp and has to get an
+  electronic invoice past the DIAN — a wrong document type or NIT check digit bounces the
+  whole document, and the tax owed changes with the buyer's department. Today no assistant
+  helps with that; the generic tool set does not even know these rules exist.
+- **The shopper** whose AI assistant "checks out" and silently picks a payment rail that
+  cannot physically reach their town, or an address-only flow that ignores the fact that
+  cash on delivery is how the sale actually happens.
+
+The tools that ship in every WebMCP commerce demo make both of these worse, confidently,
+because they encode a checkout the buyer does not have.
+
+## Colombia is the instance; the shape is the point
+
+Nothing here is Colombia-specific except `dominio.js`. The *pattern* — that the last mile
+of commerce is local law the agent cannot infer, and the page is the only party that
+knows it — repeats everywhere the US defaults break: **Brazil** (NF-e, CPF/CNPJ),
+**Mexico** (CFDI, RFC), **India** (GSTIN, UPI-first payment). Swap the rule module and the
+same page registers the tools that jurisdiction actually needs. The adoption path is one
+static file and a `<script>` — no service to run, no backend to keep alive, MIT-licensed.
+
 ---
 
 ## The nine tools
