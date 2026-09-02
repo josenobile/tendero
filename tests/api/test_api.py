@@ -35,6 +35,7 @@ SOLO_PAGINA = (
     "agregar_al_carrito",
     "quitar_del_carrito",
     "confirmar_pedido",
+    "iniciar_pago",
 )
 """Las dos herramientas que solo registra la pagina: envuelven el carrito del
 navegador, que no vive en el backend, asi que no tienen ruta."""
@@ -608,7 +609,7 @@ def test_la_superficie_es_escalonada_y_no_plana() -> None:
     niveles = [int(n) for n in re.findall(r"nivel: (\d),", _vitrina())]
     assert len(niveles) == len(HERRAMIENTAS) + len(SOLO_PAGINA)
     # Three rungs: 4 always-on, 3 unlocked by a cart, 2 (payment + order) needing a destination.
-    assert sorted(niveles) == [0, 0, 0, 0, 1, 1, 1, 2, 2]
+    assert sorted(niveles) == [0, 0, 0, 0, 1, 1, 1, 2, 2, 2]
 
 
 def test_la_vitrina_no_depende_de_ninguna_red_externa() -> None:
