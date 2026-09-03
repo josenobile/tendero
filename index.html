@@ -215,11 +215,11 @@ footer.pie{max-width:1400px; margin:1.6rem auto; padding:0 1.1rem 2rem; font-siz
 <section class="tesis" aria-label="Tesis del proyecto">
   <span class="rotulo" data-i18n="hero.rotulo">La tesis</span>
   <p class="es">El catálogo de herramientas WebMCP por defecto —buscar, agregar al carrito, pagar— no es
-    neutral: exporta supuestos gringos, así que esta tienda registra las diez herramientas que una venta
-    colombiana sí exige y deja el clic que la cierra en manos de una persona.</p>
+    neutral: exporta supuestos gringos, así que esta tienda registra las once herramientas que una venta
+    colombiana sí exige y deja en manos de una persona el clic que autoriza la venta.</p>
   <p class="en" lang="en">The default WebMCP tool set — search, add to cart, check out — is not neutral: it
-    exports US assumptions, so this store registers the ten tools a Colombian sale actually requires and
-    leaves the click that closes it to a human.</p>
+    exports US assumptions, so this store registers the eleven tools a Colombian sale actually requires and
+    leaves the authorizing click to a human.</p>
 </section>
 
 <header>
@@ -837,7 +837,17 @@ function pintarPedido(pedido, origen) {
     ${pedido.notas ? `<p class="fund">Notas del cliente: ${esc(pedido.notas)}</p>` : ""}`;
   const cuerpo = $("cuerpo-pedido");
   if (pedido.aprobado_por_humano) {
-    const pago = pedido.pago
+    const pago = (pedido.pago && pedido.pago.aprobado)
+      ? `<div id="pago-aprobado" style="border:2px solid #1a7f37;border-radius:10px;padding:14px 16px;background:#eafff0;margin-top:10px">
+           <div style="font:800 16px system-ui;color:#0f5323;letter-spacing:.03em">✅ PAGO APROBADO · SANDBOX</div>
+           <p class="nota" style="margin:.55rem 0 .35rem"><strong>${esc(pedido.pago.transaccion.estado)}</strong> ·
+             transacción <strong>${esc(pedido.pago.transaccion.id)}</strong> · ${esc(pedido.pago.transaccion.metodo)} ·
+             ${esc(pedido.total.texto)} · ref ${esc(pedido.pago.referencia)}.</p>
+           <p class="fund">Aprobación de Wompi en <strong>SANDBOX</strong> — la confirmación que devuelve el riel
+             cuando el cliente completa el pago de prueba. No mueve dinero real; en producción llega por webhook
+             firmado. El agente cerró la compra de punta a punta tras el visto bueno humano.</p>
+         </div>`
+      : pedido.pago
       ? `<a class="btn primario grande" href="${esc(pedido.pago.url)}" target="_blank" rel="noopener">
            Pagar con Wompi · ${esc(pedido.pago.entorno)}</a>
          <p class="fund">Checkout REAL de Wompi (${esc(pedido.pago.entorno)}) — PSE, Nequi, Bancolombia o tarjeta,
@@ -1207,6 +1217,55 @@ const acciones = {
         "mueve dinero real. El IVA y el impoconsumo van con el monto exacto que liquidó la página.",
     };
   },
+
+  async confirmar_pago(args, origen) {
+    // El cierre. El pedido ya lo aprobó una persona (sello humano) y el agente ya emitió el
+    // checkout con iniciar_pago; esto refleja la aprobación que Wompi devuelve — por webhook
+    // firmado en producción — cuando el cliente completa el cobro. Aquí, en SANDBOX, cierra
+    // la compra de punta a punta sin mover dinero real y rotulado como sandbox en todos lados.
+    const pedido = estado.pedido;
+    if (!pedido) throw new Error("no hay pedido: armá la orden con confirmar_pedido primero");
+    if (!pedido.aprobado_por_humano) {
+      throw new Error("el pedido todavía no lo aprobó una persona: alguien debe pulsar " +
+        "«Confirmar pedido» en la página — la venta la asume el humano, no el agente");
+    }
+    if (!pedido.pago) {
+      throw new Error("todavía no se emitió el cobro: llamá iniciar_pago antes de confirmar el pago");
+    }
+    const entorno = pedido.pago.entorno || "sandbox";
+    if (entorno !== "sandbox") {
+      throw new Error("confirmar_pago solo cierra pagos en SANDBOX; un pago real de producción " +
+        "lo confirma el webhook firmado de Wompi, nunca el agente");
+    }
+    // Idempotente (idempotentHint:true): confirmar un pago ya APROBADO devuelve la MISMA
+    // transacción, sin acuñar otra. Es la semántica correcta de un cierre de pago —
+    // reintentar no cobra dos veces.
+    if (pedido.pago.aprobado && pedido.pago.transaccion) {
+      return {
+        transaccion: pedido.pago.transaccion,
+        nota: "El pago ya estaba APROBADO en SANDBOX: se devuelve la misma transacción, sin " +
+          "acuñar una nueva (idempotente). En producción esta confirmación llega por webhook firmado.",
+      };
+    }
+    const txn = {
+      id: "SBX-" + Date.now().toString(36).toUpperCase(),
+      estado: "APROBADA",
+      entorno: "sandbox",
+      metodo: (pedido.metodo_pago && pedido.metodo_pago.nombre) || "Nequi",
+      monto: pedido.total.texto,
+      referencia: pedido.pago.referencia,
+    };
+    pedido.pago.aprobado = true;
+    pedido.pago.transaccion = txn;
+    anotar("cambio", "pago aprobado (sandbox)", txn.id + " · " + txn.monto);
+    pintarPedido(pedido, origen);
+    return {
+      transaccion: txn,
+      nota: "Aprobación en SANDBOX: es la confirmación que Wompi devuelve cuando el cliente " +
+        "completa el pago de prueba. No mueve dinero real. En producción esta confirmación llega " +
+        "por webhook firmado del riel, no la emite el agente.",
+    };
+  },
 };
 
 /* --------------------------------------------------------------------- *
@@ -1551,6 +1610,32 @@ const HERRAMIENTAS = [
         ? `Checkout Wompi (${d.entorno}) por ${d.monto} — ref ${d.referencia}, IVA ${d.iva_centavos} c, ` +
           `impoconsumo ${d.impoconsumo_centavos} c. Abrí: ${d.checkout_url}`
         : `Pago no emitido: ${d.nota || "falta configuración o aprobación"}.`,
+  },
+  {
+    // El onceavo, y el cierre. Refleja la aprobación que devuelve el riel (Wompi) cuando el
+    // cliente completa el cobro emitido por iniciar_pago. Solo opera en SANDBOX y solo sobre
+    // un pedido aprobado por una persona: el agente cierra la compra, pero nunca antes del
+    // visto bueno humano.
+    nombre: "confirmar_pago",
+    nivel: 2,
+    porque: "hay un cobro emitido por Wompi (sandbox), listo para confirmarse",
+    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true, untrustedContentHint: false },
+    descripcion: () =>
+      "[EN: close the sale — reflect the APPROVED result the rail (Wompi) returns once the customer completes the checkout that iniciar_pago issued. Sandbox only, and only for a human-approved order; the agent finishes the purchase but never before the human seal.] " +
+      "Cierra la compra: confirma el resultado APROBADA del cobro que emitió iniciar_pago. " +
+      "Requiere un pedido aprobado por una persona (clic humano) y un checkout ya emitido. " +
+      "Opera solo en SANDBOX y no mueve dinero real: en producción esta confirmación llega por " +
+      "webhook firmado del riel, no la emite el agente. Devuelve la transacción y sella el pedido como pagado.",
+    esquema: () => ({
+      type: "object",
+      properties: {
+        confirmar: { type: "boolean", description: "Poné true para cerrar el pago del pedido aprobado. Sin confirmación no se cierra." },
+      },
+      additionalProperties: false,
+    }),
+    resumen: (d) =>
+      `Pago ${d.transaccion.estado} en ${d.transaccion.entorno} — transacción ${d.transaccion.id}, ` +
+      `${d.transaccion.metodo}, ${d.transaccion.monto}, ref ${d.transaccion.referencia}. ${d.nota}`,
   },
 ];
 
