@@ -1,0 +1,4 @@
+# Canonical authorship for this repository.
+# Every commit is authored solely by Jose Nobile. This normalises attribution
+# across `git shortlog -sne`, `git blame` and GitHub's contributor graph.
+Jose Nobile <jose.nobile@gmail.com>
