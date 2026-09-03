@@ -3,8 +3,10 @@
 > **The default commerce tool set is not neutral. It exports US assumptions.**
 > `search_products` / `add_to_cart` / `checkout` quietly encode a prepaid card, a
 > street address and a self-serve checkout. A Colombian sale is none of those.
-> **Tendero registers the nine tools a Latin American sale actually requires** —
-> and the ninth one deliberately refuses to close the sale without a human.
+> **Tendero registers the eleven tools a Latin American sale actually requires** —
+> ten advise, validate, quote and stage; the eleventh can close the sale, but only in
+> Wompi sandbox (no real money moves) and only after a human's one-click authorization the
+> agent structurally cannot bypass.
 
 - **Live storefront:** **<https://josenobile.github.io/tendero/>** — static, no backend, no build step
 - **Repo:** <https://github.com/josenobile/tendero> · MIT
@@ -17,10 +19,11 @@ human click at any point:**
 | --- | --- |
 | Clean page load | **4** — `buscar_productos`, `validar_documento_dian`, `agregar_al_carrito`, `quitar_del_carrito` |
 | The agent calls `agregar_al_carrito` (free text «jabón», «leche» → SKUs) | **7** — `calcular_total_con_iva`, `consultar_derecho_retracto`, `cotizar_envio` appear |
-| The agent calls `cotizar_envio` for Leticia (91001) | **9** — `metodos_de_pago` and `confirmar_pedido` appear, the first with its description rewritten for a municipality with no road access |
+| The agent calls `cotizar_envio` for Leticia (91001) | **11** — `metodos_de_pago`, `confirmar_pedido`, `iniciar_pago` and `confirmar_pago` appear, the first with its description rewritten for a municipality with no road access |
 
 Then `confirmar_pedido` **stages** the order and stops. A human clicks **«Confirmar
-pedido»** to seal it (`SLM-20260902-9026`), and the panel reads **🤖 preparado por el
+pedido»** to seal it (an order number of the form `SLM-YYYYMMDD-NNNN`, generated per order),
+and the panel reads **🤖 preparado por el
 agente · ✋ aprobado por vos**. The agent knows the catalogue, the VAT treatment, the
 carrier coverage and the withdrawal window; the person takes responsibility for the sale.
 
@@ -84,11 +87,13 @@ static file and a `<script>` — no service to run, no backend to keep alive, MI
 
 ---
 
-## The nine tools
+## The eleven tools
 
 Six exist because a specific Colombian rule makes the generic version wrong. Two exist
-because an agent must be able to *build* the order, not just read it. The ninth exists
-because an agent must be able to *finish* the work without *committing* it. Every one is
+because an agent must be able to *build* the order, not just read it. One exists
+because an agent must be able to *finish* the work without *committing* it. The last two
+carry the sealed order into payment — a Wompi **sandbox** checkout and its approved result —
+and run only after a human's authorizing click. Every one is
 registered with a full JSON Schema and a description written for an agent to read — the
 descriptions cite the statute, because an agent that cannot cite the rule will invent one.
 
@@ -176,7 +181,7 @@ services — so an arepa is not returnable, and the tool detects that from the c
 Evaluates five Colombian rails against this order and **returns the ones that do not
 apply, with the reason**, because the useful answer for a customer is not that cash on
 delivery is missing but why. Asked for contraentrega to Leticia, it refuses: the town
-*«solo tiene acceso aéreo»*.
+*«solo tiene acceso aéreo o fluvial»*.
 
 - **Nequi** is a low-value deposit and cannot move more than eight minimum wages per
   operation (Decreto 2555 de 2010)
@@ -215,7 +220,7 @@ cart logic to drift, and an empty cart sends the surface back to rung 0.
 
 ### 9. `confirmar_pedido` — the agent finishes the work and stops
 
-The other eight calculate. This one **produces** something — and deliberately does not
+The advisory tools calculate. This one **produces** something — and deliberately does not
 close it. It assembles the complete order and leaves it *staged*, waiting for a human
 click. Before staging anything it re-validates through the same rules the other tools
 expose:
@@ -247,7 +252,7 @@ calendar with a moving Easter. Then it hits a wall it cannot cross by design. Th
 rendered on the page — line by line, with its freight, its payment ceiling and its
 retracto deadline — and **a person clicks «Confirmar pedido»**.
 
-Only that click mints the order number (`SLM-20260902-9026`) and the panel changes to
+Only that click mints the order number (of the form `SLM-YYYYMMDD-NNNN`, generated per order) and the panel changes to
 **🤖 preparado por el agente · ✋ aprobado por vos**. Nothing in the tool surface can
 produce that seal.
 
@@ -268,7 +273,7 @@ announce it. Tendero uses
 | --- | --- | --- | --- |
 | **0** | Empty cart | 4 — `buscar_productos`, `validar_documento_dian`, `agregar_al_carrito`, `quitar_del_carrito` | The others describe *an order*. With an empty cart they have nothing to operate on, and offering them invites an agent to hallucinate one. The cart writers stay: they are how the order gets built in the first place. |
 | **1** | Cart has items | 7 — plus `calcular_total_con_iva`, `consultar_derecho_retracto`, `cotizar_envio` | Now there is an order: it can be liquidated, its withdrawal window computed and its freight quoted. |
-| **2** | Destination fixed | 9 — plus `metodos_de_pago`, `confirmar_pedido` | The rails are a function of the municipality, and an order that cannot be dispatched cannot be staged. Only now do both make sense. |
+| **2** | Destination fixed | 11 — plus `metodos_de_pago`, `confirmar_pedido`, `iniciar_pago`, `confirmar_pago` | The rails are a function of the municipality, and an order that cannot be dispatched cannot be staged. Only now do payment, staging and the sandbox checkout make sense. |
 
 Two things make this more than a counter going up:
 
@@ -276,7 +281,7 @@ Two things make this more than a counter going up:
 cart writers, `cotizar_envio` and `confirmar_pedido`: adding a reference creates the order,
 and quoting freight *fixes the page's destination*, which is exactly what a shopper does
 when they type their city. So an agent that calls `agregar_al_carrito` walks the page from
-rung 0 to rung 1 in a single move, and quoting freight afterwards opens rung 2 — nine
+rung 0 to rung 1 in a single move, and quoting freight afterwards opens rung 2 — eleven
 tools, and no human click anywhere in that path.
 
 **The description mutates with the state.** When the selected destination is one of the
@@ -316,7 +321,7 @@ is shipped to the browser:
 
 ```
 static/index.html      one self-contained file: inline CSS + JS, no CDN, no build step
-       │               registers the nine tools, gates them by rung, paints every result
+       │               registers the eleven tools, gates them by rung, paints every result
        ▼  import("./dominio.js")          ← the whole domain, in the page's own session
 static/dominio.js      the Colombian rules as JavaScript: money, DIAN documents, freight,
                        VAT, retracto calendar, payment rails, catalogue
@@ -377,7 +382,7 @@ Open the page in a browser that exposes WebMCP and ask for something a generic c
 tool set cannot answer:
 
 - *«Agregá jabón y leche, cotizá el envío a Leticia y decime cómo puede pagar el cliente.»*
-  — runs end to end: freight `$127.025` with Inter Rapidísimo, 7–11 business days, total `$175.825`.
+  — runs end to end: freight `$86.435` with Inter Rapidísimo, 7–11 business days, total `$110.835`.
 - *«¿Si compro esto por WhatsApp y me lo entregan el jueves santo, hasta cuándo puedo devolverlo?»*
 - *«El NIT del cliente es 890903938, ¿cuál es el dígito de verificación?»*
 - *«¿Por qué el mismo café cuesta distinto en Medellín y en San Andrés?»*
@@ -395,7 +400,7 @@ ruff check . && ruff format --check .
 
 GitHub Actions runs all three, plus a job that loads the real page under a mock
 `document.modelContext` and asserts that an agent can grow the tool surface by itself —
-the 4 → 7 → 9 progression above is a CI assertion, not a screenshot.
+the 4 → 7 → 11 progression above is a CI assertion, not a screenshot.
 
 Python 3.12+, `src` layout, frozen slotted dataclasses, no `Any`, money as integer
 centavos, never `float`.
@@ -422,8 +427,12 @@ environment variables, no service to page you at 3 a.m.
 - The PEP (Permiso Especial de Permanencia) was superseded in practice by the PPT (Decreto
   216 de 2021). It is kept because it still appears in pre-2021 customer records and DIAN
   still publishes code 47.
-- **No tool takes the customer's money.** Eight of the nine are advisory; the ninth stages
-  an order and stops. The sale is committed by a human click, and by nothing else.
+- **Payment runs in Wompi sandbox only — no real money moves.** Ten of the eleven tools
+  advise, validate, quote and stage; the eleventh, `confirmar_pago`, can close the sale, but
+  only after a human's one-click authorization the agent structurally cannot bypass —
+  `confirmar_pago` refuses until an order is staged, a human has sealed it, and `iniciar_pago`
+  has issued the sandbox checkout. The human authorizes the sale; the agent executes the
+  payment.
 
 ## Disclosure
 

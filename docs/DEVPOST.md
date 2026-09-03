@@ -12,8 +12,10 @@
 exports US assumptions.** `search_products` / `add_to_cart` / `checkout` quietly encode a
 prepaid card, a street address and a self-serve checkout. A Colombian sale is none of
 those. Tendero is a working corner-store storefront — Surtitienda La Milagrosa, Manrique,
-Medellín — that hands an agent the **nine tools a Colombian sale actually requires**, and
-then refuses to let the agent close the sale.
+Medellín — that hands an agent the **eleven tools a Colombian sale actually requires**. Ten
+of them advise, validate, quote and stage; the eleventh can close the sale, but only in
+Wompi sandbox — no real money moves — and only after a human's one-click authorization the
+agent structurally cannot bypass.
 
 ---
 
@@ -29,18 +31,19 @@ then refuses to let the agent close the sale.
 3. What you will see, with **no human click anywhere in it**:
    - the agent resolves the free text «jabón» and «leche» to SKUs, the cart fills, and the
      surface goes **4 → 7**;
-   - it quotes freight to Leticia (DANE 91001): **$127.025**, Inter Rapidísimo, 7–11 días
-     hábiles — and the surface goes **7 → 9**, `metodos_de_pago` and `confirmar_pedido`
-     appearing because only now do they mean anything;
+   - it quotes freight to Leticia (DANE 91001): **$86.435**, Inter Rapidísimo, 7–11 días
+     hábiles — and the surface goes **7 → 11**, `metodos_de_pago`, `confirmar_pedido`,
+     `iniciar_pago` and `confirmar_pago` appearing because only now do they mean anything;
    - `metodos_de_pago` has **rewritten its own description** and reports contra entrega as
-     unavailable: *Leticia «solo tiene acceso aéreo»*. Order total **$175.825**
-     (mercancía $48.800 + flete $127.025).
+     unavailable: *Leticia «solo tiene acceso aéreo o fluvial»*. Order total **$110.835**
+     (mercancía $24.400 + flete $86.435).
    - every panel the agent touched is badged **🤖 llamado por el agente**.
 4. Two more prompts that a generic commerce tool set cannot answer at all:
    - *«El NIT del cliente es 900123456-0»* → **INVÁLIDO: dígito de verificación
      incorrecto… se recibió 0, corresponde 8.**
    - *«Preparame el pedido»* → the agent stages the order and **stops**. Click
-     **Confirmar pedido** yourself and it seals: order **SLM-20260902-9026**, panel reading
+     **Confirmar pedido** yourself and it seals: an order number of the form
+     **SLM-YYYYMMDD-NNNN** (generated per order), panel reading
      **🤖 preparado por el agente · ✋ aprobado por vos**.
 
 ---
@@ -68,7 +71,7 @@ merchant's page, and the cart is browser state.
 ## (b) How it creates a better user experience
 
 - **The surface matches what is currently possible.** An agent arriving at a clean page
-  sees 4 tools, not 9. There is nothing to hallucinate an order out of, so it doesn't.
+  sees 4 tools, not 11. There is nothing to hallucinate an order out of, so it doesn't.
 - **Tools change meaning, not just availability.** Fix a destination and `metodos_de_pago`
   rewrites its own description to say this municipality has no road access and the basket
   contains VAT-excluded lines. Re-registration fires `toolchange`, so the agent re-reads
@@ -96,7 +99,8 @@ makes this collaboration rather than automation:
 
 > **`confirmar_pedido` stages the order and does not commit it.** The agent validates,
 > liquidates and assembles; the page renders exactly what will happen and waits. A **human
-> click** on *Confirmar pedido* seals it (measured: **SLM-20260902-9026**), and the artifact
+> click** on *Confirmar pedido* seals it (an order number of the form **SLM-YYYYMMDD-NNNN**,
+> generated per order), and the artifact
 > is stamped with both hands — **🤖 preparado por el agente · ✋ aprobado por vos**.
 
 The agent knows the catalogue, the tax treatment, the carrier coverage and the withdrawal
@@ -106,11 +110,11 @@ liquidations, a volumetric freight quote and a business-day window per order.
 
 ## (d) How WebMCP was implemented
 
-- **Nine tools**, each `document.modelContext.registerTool({ name, description,
+- **Eleven tools**, each `document.modelContext.registerTool({ name, description,
   inputSchema, execute })` with full JSON Schema — enums, `additionalProperties: false`,
   `format: date`, bounds, and a category enum populated from the live catalog.
 - **Progressive disclosure in three rungs** gated on page state (cart empty → cart has
-  items → destination fixed): **4 → 7 → 9**. The agent walks the rungs itself; the three
+  items → destination fixed): **4 → 7 → 11**. The agent walks the rungs itself; the three
   tools with `readOnlyHint: false` are precisely the ones that move it.
 - **Descriptions computed from state**, so a change forces genuine re-registration and a
   real `toolchange` event. The page renders its surface panel *from that event*, so the
@@ -157,24 +161,31 @@ as an agent would:
 |---|---|
 | Clean page load | **4** — `buscar_productos`, `validar_documento_dian`, `agregar_al_carrito`, `quitar_del_carrito` |
 | Agent calls `agregar_al_carrito` (free text "jabón", "leche" → SKUs) | **7** — `calcular_total_con_iva`, `consultar_derecho_retracto`, `cotizar_envio` appear |
-| Agent calls `cotizar_envio` for Leticia (91001) | **9** — `metodos_de_pago` (description rewritten for a road-less municipality) and `confirmar_pedido` appear |
-| Agent calls `confirmar_pedido` | still **9** — the order is **staged, not committed** |
-| **Human clicks "Confirmar pedido"** | order sealed **SLM-20260902-9026**, panel: **🤖 preparado por el agente · ✋ aprobado por vos** |
+| Agent calls `cotizar_envio` for Leticia (91001) | **11** — `metodos_de_pago` (description rewritten for a road-less municipality), `confirmar_pedido`, `iniciar_pago` and `confirmar_pago` appear |
+| Agent calls `confirmar_pedido` | still **11** — the order is **staged, not committed** |
+| **Human clicks "Confirmar pedido"** | order sealed with a number of the form **SLM-YYYYMMDD-NNNN** (generated per order), panel: **🤖 preparado por el agente · ✋ aprobado por vos** |
+| Agent calls `iniciar_pago` (after the human seal) | a **Wompi sandbox** checkout URL is issued, carrying the exact VAT/consumption tax the page computed (tax-in-cents); it refuses unless the order was human-sealed and sandbox keys are configured |
+| Agent calls `confirmar_pago` | the sale **closes in sandbox** — Wompi's **APROBADA** result (a `SBX-…` id, entorno sandbox), painting a **✅ PAGO APROBADO · SANDBOX** panel; no real money moves |
+| `confirmar_pago` before the human seal / before `iniciar_pago` | **refused** — it will not close a sale until an order is staged, a human has sealed it, and `iniciar_pago` has issued the checkout |
 
-**No human click occurred in rungs 1–3.** The only human click in the whole flow is the one
-that commits the sale — by design.
+**No human click occurred in rungs 1–3.** The one human click in the whole flow is the
+authorizing seal on *Confirmar pedido* — and only after it can `iniciar_pago` open the Wompi
+sandbox checkout and `confirmar_pago` close the sale. By design.
 
 Also verified live on the deployed page:
 - NIT `900123456-0` → *«INVÁLIDO: dígito de verificación incorrecto… se recibió 0,
   corresponde 8»*.
-- Contra entrega to Leticia → refused: *«solo tiene acceso aéreo»*.
-- The page's own demo prompt runs end to end: flete **$127.025** (Inter Rapidísimo, 7–11
-  días hábiles), total **$175.825**.
+- Contra entrega to Leticia → refused: *«solo tiene acceso aéreo o fluvial»*.
+- The page's own demo prompt runs end to end: flete **$86.435** (Inter Rapidísimo, 7–11
+  días hábiles), total **$110.835**.
 
 ## Honest notes
 
 - Carrier tariffs, the merchant's identity and product prices are **invented demonstration
   data**. The tax rules, collection ceilings, holiday calendar and NIT check-digit algorithm
   are real and cited to the statute inline in each tool description.
-- No tool takes the customer's money. The nine tools advise, validate and stage; a person
-  commits.
+- Payment runs in **Wompi sandbox only — no real money moves**. Ten of the eleven tools
+  advise, validate, quote and stage; the eleventh, `confirmar_pago`, can close the sale, but
+  only after a human's one-click authorization the agent structurally cannot bypass:
+  `confirmar_pago` refuses until an order is staged, a human has sealed it, and `iniciar_pago`
+  has issued the checkout. The human authorizes the sale; the agent executes the payment.

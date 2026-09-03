@@ -8,7 +8,7 @@ Deadline: **Sep 3, 2026 · 15:00 Bogotá / 13:00 PT**. Submit at https://webmcp.
 Tendero
 
 ## Elevator pitch (one line, ~200 char)
-The default WebMCP commerce tools assume a prepaid card, a street address, a self-serve checkout — all wrong outside the US. Tendero registers the ten tools a Colombian sale actually needs, and the last refuses to charge without a human.
+WebMCP commerce tools assume a US checkout. Tendero gives an agent the eleven tools a Colombian sale actually needs — DIAN, VAT-by-destination, quoted freight, Wompi — and closes the sale only after a human's authorizing click. (~200 char for the Devpost tagline)
 
 ## "What it does" / story (paste the four required points)
 > Source: docs/DEVPOST.md — sections (a) fit for WebMCP, (b) better UX, (c) what humans+agents can now do together, (d) how WebMCP was implemented, plus Potential impact and the Verified table. Paste it whole.
@@ -29,7 +29,7 @@ _(fill after upload)_  → https://youtu.be/__________
 ## Pre-submission checklist (rules)
 - [ ] Live URL opens in ChatGPT in-app browser / Chrome-with-WebMCP  ✅ live, HTTP 200
 - [ ] Public repo with OSS license visible in About  ✅ MIT
-- [ ] `document.modelContext.registerTool(...)` present in repo  ✅ 10 tools
+- [ ] `document.modelContext.registerTool(...)` present in repo  ✅ 11 tools
 - [ ] Text description covers the 4 required points  ✅ docs/DEVPOST.md
 - [ ] Demo video <3 min, PUBLIC YouTube, with audio  ⏳ file ready, needs upload
 - [ ] Video plays logged-out  ⏳ verify after upload

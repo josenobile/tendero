@@ -27,18 +27,18 @@ given; if a take runs long, cut words, never shots.
 this is.
 
 Screen: the deployed page on load. Header pill reads **`nivel 0: carrito vacío`**; the
-WebMCP panel sub-header reads **`4 de 9 registradas`**.
+WebMCP panel sub-header reads **`4 de 11 registradas`**.
 
 > "Every WebMCP commerce demo registers the same four tools: search, view, add to cart,
 > check out. That tool set is not neutral. It assumes a prepaid card, a street address and
 > a self-serve checkout — and outside the United States, all three are wrong. This page
-> registers the nine tools a Colombian sale actually needs."
+> registers the eleven tools a Colombian sale actually needs."
 
 *(48 words · ~12 s)*
 
 ---
 
-## 0:12–0:48 — One prompt. No clicks. 4 → 7 → 9.
+## 0:12–0:48 — One prompt. No clicks. 4 → 7 → 11.
 **Criterion: WebMCP Leverage.** **This is the single most important shot in the video.**
 Do not cut inside it — a cut here reads as a hidden failure.
 
@@ -52,14 +52,14 @@ catch, in order, with no human input between them:
 
 | moment | on screen |
 | --- | --- |
-| before | `4 de 9 registradas` · stepper segment 1 lit · `nivel 0: carrito vacío` |
-| agent calls `agregar_al_carrito` (free text "jabón", "leche" → SKUs) | **`7 de 9`** · segment 2 lit · `nivel 1: carrito con productos` |
-| agent calls `cotizar_envio` for Leticia | **`9 de 9`** · segment 3 lit · `nivel 2: carrito + destino` |
+| before | `4 de 11 registradas` · stepper segment 1 lit · `nivel 0: carrito vacío` |
+| agent calls `agregar_al_carrito` (free text "jabón", "leche" → SKUs) | **`7 de 11`** · segment 2 lit · `nivel 1: carrito con productos` |
+| agent calls `cotizar_envio` for Leticia | **`11 de 11`** · segment 3 lit · `nivel 2: carrito + destino` |
 
 > "I paste one sentence and then take my hands off. The page starts by offering the agent
 > four tools. The agent adds the products itself — and the page hands it three more,
 > because now there is an order to tax, to quote and to return. It quotes freight to
-> Leticia, in the Amazon, and the last two appear. Four, seven, nine — and I never
+> Leticia, in the Amazon, and the last two appear. Four, seven, eleven — and I never
 > clicked. The agent walked the page up its own ladder."
 
 *(72 words · ~26 s, leaving ~10 s of silence for the counter to move on screen)*
@@ -171,7 +171,7 @@ paints the page, so a human watching sees exactly what the agent did.
 
 ## 2:36–2:45 — Close
 
-> "Tendero. Nine tools, the rules cited to the statute, MIT licensed, live now."
+> "Tendero. Eleven tools, the rules cited to the statute, MIT licensed, live now."
 
 *(13 words · ~5 s)*
 
@@ -191,8 +191,8 @@ Record in this order; tick each box before moving on.
 - [ ] Browser fully **logged out / clean profile**, no extensions bar, no bookmarks bar, no
       personal tabs.
 - [ ] **Reset page state** between takes (fresh load, empty cart) so the counter genuinely
-      starts at `4 de 9`.
-- [ ] Zoom the browser so `sub-superficie` (`N de 9 registradas`), the level pill and the
+      starts at `4 de 11`.
+- [ ] Zoom the browser so `sub-superficie` (`N de 11 registradas`), the level pill and the
       tool descriptions are **readable at 720p** — assume the judge does not full-screen it.
 - [ ] Console open? **No.** Zero console errors is a fact for the README, not the video;
       an open devtools panel steals the frame from the counter.
@@ -201,7 +201,7 @@ Record in this order; tick each box before moving on.
 - [ ] **One take per segment, full screen, no cuts inside a take.** Cuts happen only *between*
       the numbered segments above.
 - [ ] Absolutely **no cut inside 0:12–0:48**. That segment must be visibly continuous from
-      the paste to `9 de 9`, or the whole WebMCP-Leverage claim is unproven.
+      the paste to `11 de 11`, or the whole WebMCP-Leverage claim is unproven.
 - [ ] **No cut between the staged order and the human click** at 1:45–2:20.
 - [ ] Hands off the mouse during the agent run — if the cursor twitches, re-shoot.
 
@@ -229,7 +229,7 @@ not narrate a number that the screen does not show:
   the catalogue panel is on screen at the time.
 - "18 public holidays, twelve of which shift to Monday" — a repo claim, not a screen claim.
 - The freight figures from the demo prompt (Inter Rapidísimo, 7–11 business days,
-  `$127.025` freight, `$175.825` total) are stable but destination- and cart-dependent:
+  `$86.435` freight, `$110.835` total) are stable but destination- and cart-dependent:
   narrate them only if the frame shows them, or keep the narration qualitative as written
   above.
 - The order seal number is generated per approval — `SLM-20260902-9026` is the measured
