@@ -36,9 +36,11 @@ SOLO_PAGINA = (
     "quitar_del_carrito",
     "confirmar_pedido",
     "iniciar_pago",
+    "confirmar_pago",
 )
-"""Las dos herramientas que solo registra la pagina: envuelven el carrito del
-navegador, que no vive en el backend, asi que no tienen ruta."""
+"""Las herramientas que solo registra la pagina: envuelven el carrito del navegador
+o el ciclo de pedido/pago (confirmar_pedido, iniciar_pago, confirmar_pago), que no
+viven en el backend, asi que no tienen ruta."""
 
 ASEO = [{"sku": "ASE-JAB-X3", "cantidad": 2}]
 MERCADO = [
@@ -597,7 +599,7 @@ def test_la_vitrina_usa_la_api_webmcp_esperada() -> None:
 
 
 def test_toda_herramienta_declara_sus_anotaciones() -> None:
-    """readOnlyHint y untrustedContentHint tienen que estar en las ocho."""
+    """readOnlyHint y untrustedContentHint tienen que estar en todas las herramientas."""
     html = _vitrina()
     total = len(HERRAMIENTAS) + len(SOLO_PAGINA)
     assert html.count("readOnlyHint:") == total
@@ -608,8 +610,9 @@ def test_la_superficie_es_escalonada_y_no_plana() -> None:
     """Si todas las herramientas viven en el nivel 0, no hay superficie dinamica."""
     niveles = [int(n) for n in re.findall(r"nivel: (\d),", _vitrina())]
     assert len(niveles) == len(HERRAMIENTAS) + len(SOLO_PAGINA)
-    # Three rungs: 4 always-on, 3 unlocked by a cart, 2 (payment + order) needing a destination.
-    assert sorted(niveles) == [0, 0, 0, 0, 1, 1, 1, 2, 2, 2]
+    # Three rungs: 4 always-on, 3 unlocked by a cart, 4 needing a destination
+    # (metodos_de_pago, confirmar_pedido, iniciar_pago, confirmar_pago).
+    assert sorted(niveles) == [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2]
 
 
 def test_la_vitrina_no_depende_de_ninguna_red_externa() -> None:

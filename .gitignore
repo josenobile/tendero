@@ -19,3 +19,4 @@ htmlcov/
 static/__*.html
 .wrangler/
 uv.lock
+node_modules/
