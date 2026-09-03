@@ -22,7 +22,7 @@ JavaScript · WebMCP (`document.modelContext.registerTool`) · Python (reference
 - Demo prompt to paste into a WebMCP host: «Agregá jabón y leche, cotizá el envío a Leticia y decime cómo puede pagar el cliente»
 
 ## Video (YouTube, <3 min, public)
-_(fill after upload)_  → https://youtu.be/__________
+https://youtu.be/0z1ICokbFfw
 
 ---
 

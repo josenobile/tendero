@@ -10,7 +10,7 @@
 
 - **Live storefront:** **<https://josenobile.github.io/tendero/>** — static, no backend, no build step
 - **Repo:** <https://github.com/josenobile/tendero> · MIT
-- **Video:** _(under 3 minutes, public, with audio)_
+- **Video:** https://youtu.be/0z1ICokbFfw
 
 **The tool surface grows under the agent's own hands — measured in a browser, with no
 human click at any point:**

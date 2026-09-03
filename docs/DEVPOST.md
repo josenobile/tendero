@@ -2,7 +2,7 @@
 
 **Live URL:** https://josenobile.github.io/tendero/
 **Repo:** https://github.com/josenobile/tendero (MIT, licence visible in the repo root)
-**Video:** _(pending — <3 min, public YouTube, with audio)_
+**Video:** https://youtu.be/0z1ICokbFfw
 
 ---
 
